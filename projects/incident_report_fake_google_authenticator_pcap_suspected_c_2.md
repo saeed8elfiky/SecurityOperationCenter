@@ -28,8 +28,16 @@ This report documents the findings from the provided PCAP, based on a simulated 
 * **Host Name:** `DESKTOP-L8C5GSJ`
   Evidence: Found in DNS response packets mapping IP ↔ hostname. Confirms the infected machine identity.
 
+<p align ="center">
+    <img src= "/socPhoto/host_name.png" alt = "access management"
+</p>
+
 * **User Account Name:** `shutchenson`
   Evidence: Kerberos authentication requests captured in the traffic show this username initiating authentication with the AD controller. Indicates that the infection was active during the user’s session.
+
+<p align ="center">
+    <img src= "/socPhoto/kerberos_username.png" alt = "access management"
+</p>
 
 ---
 
@@ -41,6 +49,10 @@ This report documents the findings from the provided PCAP, based on a simulated 
   * The domain name is a clear typosquatting attempt on “google authenticator”.
   * Traffic logs confirm DNS queries and HTTP(S) requests to this domain.
   * The website likely hosted a malicious installer disguised as the real Google Authenticator.
+ 
+<p align ="center">
+    <img src= "/socPhoto/domain_name.png" alt = "access management"
+</p>
 
 ---
 
@@ -52,6 +64,10 @@ This report documents the findings from the provided PCAP, based on a simulated 
 
   * Evidence: The infected host issued HTTP `GET` requests to this server, attempting to retrieve suspicious script-like files.
   * Likely purpose: Stage 2 malware or configuration retrieval.
+ 
+<p align ="center">
+    <img src= "/socPhoto/httpc2.png" alt = "access management"
+</p>
 
 ### Additional Suspicious C2 IPs
 
@@ -61,6 +77,14 @@ This report documents the findings from the provided PCAP, based on a simulated 
   * Evidence: Large volumes of TLS traffic on unusual ports.
   * The TLS SNI field contained raw IP addresses instead of domains, which is highly suspicious.
   * Heavy encrypted Application Data exchange suggests C2 activity (data exfiltration, beaconing, or remote tasking).
+ 
+<p align ="center">
+    <img src= "/socPhoto/45.125.66.32.png" alt = "access management"
+</p>
+
+<p align ="center">
+    <img src= "/socPhoto/45.125.66.252.png" alt = "access management"
+</p>
 
 ---
 
