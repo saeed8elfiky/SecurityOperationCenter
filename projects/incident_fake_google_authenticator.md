@@ -1,4 +1,4 @@
-# Incident Report – Fake Google Authenticator (pcap) / Suspected C2
+# Incident Report – Fake Google Authenticator
 
 
 **Prepared by:** `Saeed Ashraf Elfiky`
