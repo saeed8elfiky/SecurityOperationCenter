@@ -5,7 +5,7 @@
 **Environment (per brief):**  
 - LAN: `10.1.17.0/24`  
 - Domain: `bluemoontuesday[.]com` (AD env name: **BLUEMOONTUESDAY**)  
-- AD DC: `WIN-GSHS4OLW48D` @ `10.1.17.12` *(as interpreted from the brief)*  
+- AD DC: `WIN-GSHS4OLW48D` @ `10.1.17.12`  
 - File provided: `Google Authenticator.pcap`
 
 ---
