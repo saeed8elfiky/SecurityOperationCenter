@@ -13,14 +13,14 @@
 
 ## 1. Executive Summary
 
-This report documents the findings from the provided PCAP, based on a simulated SOC investigation. The infection appears to have originated when a user searched for and downloaded a fake version of Google Authenticator from a typosquatted domain. Subsequent traffic analysis indicates communication with suspicious external IPs, likely functioning as Command-and-Control (C2) servers.
+This report presents findings from the provided PCAP based on a simulated SOC investigation. The infection began when a user searched for and downloaded a fake Google Authenticator from a typosquatted domain. Traffic analysis shows communication with suspicious external IPs, likely acting as Command-and-Control (C2) servers.
 
 ---
 
 ## 2. Infected Host Details
 
 * **IP Address of Infected Client:** `10.1.17.215`
-  Evidence: This host generated a high volume of DNS queries and suspicious connections. It communicated frequently with the internal AD domain controller and initiated outbound traffic toward known suspicious domains and IPs. The behavior suggests malware beaconing or automated processes beyond normal user activity.
+  Evidence: This host generated many DNS queries and suspicious connections. It often contacted the AD domain controller and sent outbound traffic to known suspicious domains and IPs. This suggests malware beaconing or automated processes beyond normal user activity.
 
 * **MAC Address of Infected Client:** `00:d0:b7:26:4a:74`
   Evidence: Extracted from Ethernet headers within the PCAP. Consistently mapped to `10.1.17.215`, confirming device identity.
@@ -33,7 +33,7 @@ This report documents the findings from the provided PCAP, based on a simulated 
 </p>
 
 * **User Account Name:** `shutchenson`
-  Evidence: Kerberos authentication requests captured in the traffic show this username initiating authentication with the AD controller. Indicates that the infection was active during the user’s session.
+  Kerberos authentication requests in the traffic confirm this username initiated authentication with the AD controller. This proves the infection was active during the user’s session.  
 
 <p align ="center">
     <img src= "/socPhoto/kerberos_username.png" alt = "access management"
