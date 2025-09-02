@@ -16,7 +16,7 @@ Impact risk includes credential theft, host compromise, and potential lateral mo
 
 ---
 
-## 2) Answers to Incident Questions (from PCAP analysis & screenshots provided)
+## 2) Answers to Incident Questions
 - **Infected Windows client (IP):** `10.1.17.215`
 - **Infected Windows client (MAC):** `00:d0:b7:26:4a:74`
 - **Host name:** `DESKTOP-L8C5GSJ` *(observed in DNS response)*
@@ -31,7 +31,7 @@ Additional external IPs seen in the capture (may include benign/CDN or staging t
 
 ---
 
-## 3) Key Evidence (from the provided screenshots/PCAP snippets)
+## 3) Key Evidence
 1. **HTTP file retrieval from `5.252.153.241`**  
    - Example request: `GET /api/file/get-file/264872 HTTP/1.1`  
    - Another: `GET /api/file/get-file/29842.ps1` → **PowerShell script download**  
@@ -194,4 +194,3 @@ alert tls any any -> any 2917 (msg:"TLS on non-standard port"; flow:to_server,es
 ---
 
 **Conclusion:** The network capture supports a **malware infection** on host `DESKTOP-L8C5GSJ (10.1.17.215)` tied to a fake “Google Authenticator” download. Activity includes staged payload retrieval over HTTP and ongoing C2 over non‑standard TLS. Immediate isolation and remediation are advised.
-
