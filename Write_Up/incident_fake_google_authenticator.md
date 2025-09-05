@@ -127,7 +127,7 @@ The infected host's device had made HTTP `GET` requests to this server, attempti
 
 ## 6. Attack Analysis & MITRE ATT\&CK Mapping
 
-* **Initial Access (T1566.002 / Drive-by Compromise):** User downloaded a fake Google Authenticator app from typosquatted domain.
+* **Initial Access (T1189 / Drive-by Compromise):** User downloaded a fake Google Authenticator app from typosquatted domain.
 * **Execution (T1059 / Command & Scripting Interpreter):** Suspicious script downloads from `5.252.153.241`.
 * **Persistence (T1547 / Boot or Logon Autostart):** Potential persistence mechanisms expected, though not visible in PCAP.
 * **C2 (T1071.001 / Web Protocols & T1573 / Encrypted Channels):** TLS traffic to IP-only SNIs and script retrieval over HTTP.
