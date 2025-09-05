@@ -1,5 +1,8 @@
 # Incident Report – Fake Google Authenticator
 
+<p align ="center">
+    <img src= "/socPhoto/fake_web.svg" alt = "access management"
+</p>
 
 #### **Prepared by:** `Saeed Ashraf Elfiky`
 #### **Environment (per brief):**  
