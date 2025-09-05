@@ -4,7 +4,7 @@
 #### **Prepared by:** `Saeed Ashraf Elfiky`
 #### **Environment (per brief):**  
 - LAN: `10.1.17.0/24`  
-- Domain: `bluemoontuesday[.]com` (AD env name: **BLUEMOONTUESDAY**)  
+- Domain: `bluemoontuesday[.]com` (Acive Directory env name: **BLUEMOONTUESDAY**)  
 - AD DC: `WIN-GSHS4OLW48D` @ `10.1.17.12`  
 - File provided: `Google Authenticator.pcap`
 
