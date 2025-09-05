@@ -13,46 +13,53 @@
 
 ## 1. Executive Summary
 
-This report presents findings from the provided PCAP based on a simulated SOC investigation. The infection began when a user searched for and downloaded a fake Google Authenticator from a typosquatted domain. Traffic analysis shows communication with suspicious external IPs, likely acting as Command-and-Control (C2) servers.
+This report presents what I found as a SOC Analyst investigating and analyzing the traffic. The infection starts when the user searches for and downloads a fake Google Authenticator from a typosquatted domain. From what I saw in the traffic analysis, there is communication occurring with suspicious external IPs, likely
 
 ---
 
 ## 2. Infected Host Details
 
 * **IP Address of Infected Client:** `10.1.17.215`
-  Evidence: This host generated many DNS queries and suspicious connections. It often contacted the AD domain controller and sent outbound traffic to known suspicious domains and IPs. This suggests malware beaconing or automated processes beyond normal user activity.
+	The host with the 10.1.17.215 IP address generates a large number of DNS queries and suspicious connections. It often contacted the Active Directory domain controller and sent traffic to known suspicious domains and IPs. This means malware beaconing or automated processes beyond normal user activity.
 
 * **MAC Address of Infected Client:** `00:d0:b7:26:4a:74`
-  Evidence: Extracted from Ethernet headers within the PCAP. Consistently mapped to `10.1.17.215`, confirming device identity.
+	It appears in the Ethernet headers. Consistently mapped to `10.1.17.215`, and confirming the device identity.
 
 * **Host Name:** `DESKTOP-L8C5GSJ`
-  Evidence: Found in DNS response packets mapping IP ↔ hostname. Confirms the infected machine identity.
+	I found it in the DNS response's packets mapping IP and hostname. That confirms the identity of the infected machine.
+
 
 <p align ="center">
     <img src= "/socPhoto/host_name.png" alt = "access management"
 </p>
 
+
 * **User Account Name:** `shutchenson`
-  Kerberos authentication requests in the traffic confirm this username initiated authentication with the AD controller. This proves the infection was active during the user’s session.  
+	I searched for Kerberos authentication requests in the traffic, and it confirms that the username-initiated authentication with the AD controller. This proves the infection was active during the user’s session.
+
 
 <p align ="center">
     <img src= "/socPhoto/kerberos_username.png" alt = "access management"
 </p>
 
+
 ---
 
 ## 3. Malicious Domain Identified
 
-* **Fake Google Authenticator Domain:** `authenticatoor[.]org`
-  Analysis:
+**Fake Google Authenticator Domain:** `authenticatoor[.]org`
 
-  * The domain name is a clear typosquatting attempt on “google authenticator”.
-  * Traffic logs confirm DNS queries and HTTP(S) requests to this domain.
-  * The website likely hosted a malicious installer disguised as the real Google Authenticator.
+  Analysis:
+
+  * The domain name is a clear typosquatting attempt on “Google Authenticator”.
+  * Traffic logs confirm the DNS queries and HTTP(S) requests to this domain.
+  * The website likely hosted a malicious installer disguised as the real Google Authenticator.
  
+
 <p align ="center">
     <img src= "/socPhoto/domain_name.png" alt = "access management"
 </p>
+
 
 ---
 
@@ -62,22 +69,24 @@ This report presents findings from the provided PCAP based on a simulated SOC in
 
 * **`5.252.153.241`**
 
-  * Evidence: The infected host issued HTTP `GET` requests to this server, attempting to retrieve suspicious script-like files.
-  * Likely purpose: Stage 2 malware or configuration retrieval.
+The infected host's device had made HTTP `GET` requests to this server, attempting to retrieve suspicious scripts.
  
+
 <p align ="center">
     <img src= "/socPhoto/httpc2.png" alt = "access management"
 </p>
+
 
 ### Additional Suspicious C2 IPs
 
 * **`45.125.66.32`**
 * **`45.125.66.252`**
 
-  * Evidence: Large volumes of TLS traffic on unusual ports.
-  * The TLS SNI field contained raw IP addresses instead of domains, which is highly suspicious.
-  * Heavy encrypted Application Data exchange suggests C2 activity (data exfiltration, beaconing, or remote tasking).
+	- *A very much of TLS traffic is on unusual ports.
+	- The TLS SNI field contained raw IP addresses instead of domains, which is highly suspicious.
+	- A large amount of encrypted Application Data exchange suggests C2 activity (data exfiltration, beaconing, or remote tasking).
  
+
 <p align ="center">
     <img src= "/socPhoto/45.125.66.32.png" alt = "access management"
 </p>
@@ -85,6 +94,7 @@ This report presents findings from the provided PCAP based on a simulated SOC in
 <p align ="center">
     <img src= "/socPhoto/45.125.66.252.png" alt = "access management"
 </p>
+
 
 ---
 
@@ -136,11 +146,4 @@ This report presents findings from the provided PCAP based on a simulated SOC in
    * Restore affected systems from clean images if malware confirmed.
    * Patch systems and deploy application allowlisting.
    * Educate users on typosquatting/phishing risks.
-
----
-
-## 8. Conclusion
-
-The analysis strongly supports that `DESKTOP-L8C5GSJ` (10.1.17.215) is compromised after installing malware from a fake Google Authenticator website. The host communicated with multiple suspected C2 IPs, suggesting ongoing malicious activity. Immediate containment and eradication steps are required.
-
 
