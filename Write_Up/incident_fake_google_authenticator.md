@@ -1,7 +1,7 @@
 # Incident Report – Fake Google Authenticator
 
 <p align ="center">
-    <img src= "/socPhoto/fake_web.svg" alt = "access management"
+    <img src= "/socPhoto/Saeed_ELfiky__Incident_Report__Fake_Google_Authenticator.svg" alt = "access management"
 </p>
 
 #### **Prepared by:** `Saeed Ashraf Elfiky`
@@ -15,6 +15,10 @@
 
 
 ## 1. Executive Summary
+
+<p align ="center">
+    <img src= "/socPhoto/fake_web.svg" alt = "access management"
+</p>
 
 This report presents what I found as a SOC Analyst investigating and analyzing the traffic. The infection starts when the user searches for and downloads a fake Google Authenticator from a typosquatted domain. From what I saw in the traffic analysis, there is communication occurring with suspicious external IPs, likely
 
