@@ -1,8 +1,6 @@
 # Incident Report – Fake Google Authenticator
 
-<p align ="center">
-    <img src= "/socPhoto/Saeed_ELfiky__Incident_Report__Fake_Google_Authenticator.svg" alt = "access management"
-</p>
+
 
 #### **Prepared by:** `Saeed Ashraf Elfiky`
 #### **Environment (per brief):**  
@@ -126,6 +124,10 @@ The infected host's device had made HTTP `GET` requests to this server, attempti
 ---
 
 ## 6. Attack Analysis & MITRE ATT\&CK Mapping
+
+<p align ="center">
+    <img src= "/socPhoto/Saeed_ELfiky__Incident_Report__Fake_Google_Authenticator.svg" alt = "access management"
+</p>
 
 * **Initial Access (T1189 / Drive-by Compromise):** User downloaded a fake Google Authenticator app from typosquatted domain.
 * **Execution (T1059 / Command & Scripting Interpreter):** Suspicious script downloads from `5.252.153.241`.
