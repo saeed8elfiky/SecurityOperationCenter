@@ -8,7 +8,7 @@ This Bash script does the following:
 
 ---
 
-## 📜 Script
+## Script
 
 ```bash
 #!/bin/bash
@@ -33,3 +33,4 @@ touch $FILE
 echo "$DOMAIN" >> $FILE
 echo "$IP_ADDRESSES" >> $FILE
 ```
+### **Feel free to contact me on** **[LinkedIn](https://www.linkedin.com/in/saeed-elfiky-61188b24b/)**.
