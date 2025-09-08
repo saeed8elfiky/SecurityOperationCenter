@@ -32,3 +32,4 @@ FILE=test44.txt
 touch $FILE
 echo "$DOMAIN" >> $FILE
 echo "$IP_ADDRESSES" >> $FILE
+```
