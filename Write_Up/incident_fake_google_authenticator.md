@@ -156,3 +156,5 @@ The infected host's device had made HTTP `GET` requests to this server, attempti
    * Patch systems and deploy application allowlisting.
    * Educate users on typosquatting/phishing risks.
 
+
+### **Feel free to contact me on** **[LinkedIn](https://www.linkedin.com/in/saeed-elfiky-61188b24b/)**.
