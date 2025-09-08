@@ -125,3 +125,5 @@ After establishing access on the `SALES-PC`, the attacker pivoted to `10.0.0.131
 - Enable SMB signing to mitigate credential relay risks.
 - Enforce principle of least privilege for domain accounts.
 - Deploy monitoring rules to detect `PsExec` and abnormal SMB activity.
+
+### **Feel free to contact me on** **[LinkedIn](https://www.linkedin.com/in/saeed-elfiky-61188b24b/)**.
