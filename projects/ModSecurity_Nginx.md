@@ -2,7 +2,7 @@
 
 
 
-### Prerequisites -install packages
+### Prerequisites - install packages
 
 Run (example for Debian/Ubuntu). I added commonly required packages:
 
