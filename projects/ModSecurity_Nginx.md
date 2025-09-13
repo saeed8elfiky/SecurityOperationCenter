@@ -67,7 +67,7 @@ $q = isset($_GET['q']) ? $_GET['q'] : '';
 ```
 
 <p align ="center">
-    <img src= "/projects/ModSecurity_Nginx/scree_shots/2-create_phpfile.png"
+    <img src= "/projects/ModSec_Nginx/photo/2-create_phpfile.png"
 </p>
 
 **Then configure Nginx to serve PHP**
@@ -111,11 +111,11 @@ sudo systemctl enable --now nginx
 4- Test the xss vulnerability in the php page we just created
 
 <p align ="center">
-    <img src= "/projects/ModSecurity_Nginx/scree_shots/4-test.png"
+    <img src= "/projects/ModSec_Nginx/photo/4-test.png"
 </p>
 
   <p align ="center">
-    <img src= "/projects/ModSecurity_Nginx/scree_shots/5-test_result.png"
+    <img src= "/projects/ModSec_Nginx/photo/5-test_result.png"
 </p>
     
 ---
@@ -154,7 +154,7 @@ sudo nginx -V
 and then copy this code from `--with` to the end of the code
 
 <p align ="center">
-    <img src= "/projects/ModSecurity_Nginx/scree_shots/10-ngin-v.png"
+    <img src= "/projects/ModSec_Nginx/photo/10-ngin-v.png"
 </p>
 
 and then write:
@@ -196,7 +196,7 @@ sudo nano /etc/nginx/nginx.conf
 `load_module /etc/nginx/module/ngx_http_modsecurity_module.so`
 
 <p align ="center">
-    <img src= "/projects/ModSecurity_Nginx/scree_shots/14-nginx_conf.png"
+    <img src= "/projects/ModSec_Nginx/photo/14-nginx_conf.png"
 </p>
 
 ---
@@ -245,7 +245,7 @@ add this
 `SecRuleEngine on`
 
 <p align ="center">
-    <img src= "/projects/ModSecurity_Nginx/scree_shots/18-modsec_on.png"
+    <img src= "/projects/ModSec_Nginx/photo/18-modsec_on.png"
 </p>
 
 
@@ -266,7 +266,7 @@ Inckude /usr/local/modsecurity-crs/rules/*.conf
 ```
 
 <p align ="center">
-    <img src= "/projects/ModSecurity_Nginx/scree_shots/19-create_main.png"
+    <img src= "/projects/ModSec_Nginx/photo/19-create_main.png"
 </p>
 
 ---
@@ -281,7 +281,7 @@ modescurity_rules_files /etc/nginx/modsec/main.conf
 ```
 
 <p align ="center">
-    <img src= "/projects/ModSecurity_Nginx/scree_shots/20-edit_default.png"
+    <img src= "/projects/ModSec_Nginx/photo/20-edit_default.png"
 </p>
 
 ----
@@ -298,7 +298,7 @@ sudo systemctl restart nginx
 
 
 <p align ="center">
-    <img src= "/projects/ModSecurity_Nginx/scree_shots/21-final.png"
+    <img src= "/projects/ModSec_Nginx/photo/21-final.png"
 </p>
 
 ---
