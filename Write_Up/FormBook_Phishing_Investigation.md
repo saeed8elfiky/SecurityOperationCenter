@@ -17,9 +17,9 @@ A user opened a phishing email with an attachment named `Performa Inovice P10109
     - Example command:  
         `ripmime -i message.eml -d ./attachments/`
 
-      <p align ="center">
-      <img src= "/socPhoto/performa_incident/1_mail_attach.png"
-      </p>
+<p align ="center">
+<img src= "/socPhoto/performa_incident/1_mail_attach.png"
+</p>
 
         
 2. **Hashing the attachment:** Created SHA256 to identify the sample.
@@ -27,24 +27,24 @@ A user opened a phishing email with an attachment named `Performa Inovice P10109
     - Example command:  
         `sha256sum "Performa Inovice P101092292891 TT slip pdf.rar.zip" > attachment.sha256`
 
-      <p align ="center">
-      <img src= "/socPhoto/performa_incident/1_attach_hach.png"
-      </p>
+<p align ="center">
+<img src= "/socPhoto/performa_incident/1_attach_hach.png"
+</p>
         
 3. **Threat lookup:** Queried VirusTotal with the SHA256 hash and result in: **confirmed malicious / FormBook** (high severity).
 
 <p align ="center">
-      <img src= "/socPhoto/performa_incident/3_attach_virustotal.png"
-      </p>
+<img src= "/socPhoto/performa_incident/3_attach_virustotal.png"
+</p>
 
     
 4. **Host & network details collected:**
     
     - **Infected host IP:** `10.1.1.97`
   
-      <p align ="center">
-      <img src= "/socPhoto/performa_incident/infected_ip.png"
-      </p>
+<p align ="center">
+<img src= "/socPhoto/performa_incident/infected_ip.png"
+</p>
         
     - **Hostname:** `CHRIS-LYONS-PC`
     - **MAC:** `00:22:15:d4:9a:e7`
@@ -55,9 +55,9 @@ A user opened a phishing email with an attachment named `Performa Inovice P10109
       
 5. **Primary Domain:** `www[.]ellentscm[.]info`:
 
-  <p align ="center">
-      <img src= "/socPhoto/performa_incident/6_primary_c2.png"
-      </p>
+<p align ="center">
+<img src= "/socPhoto/performa_incident/6_primary_c2.png"
+</p>
    
 ---
 
@@ -83,15 +83,15 @@ A user opened a phishing email with an attachment named `Performa Inovice P10109
 
 1. `103.224.212.222`
 
-   <p align ="center">
-      <img src= "/socPhoto/performa_incident/103.224.212.222.png"
-      </p>
-      
+<p align ="center">
+<img src= "/socPhoto/performa_incident/103.224.212.222.png"
+</p>
+
 2. `198.105.244.228`
 
-  <p align ="center">
-      <img src= "/socPhoto/performa_incident/198.105.244.228.png"
-      </p>
+<p align ="center">
+<img src= "/socPhoto/performa_incident/198.105.244.228.png"
+</p>
     
 3. `175.103.55.71`
 4. `162.213.212.22`
@@ -107,8 +107,8 @@ All these IPs are C2s and used by attacker to retrives and stole data as we can 
 
 
 <p align ="center">
-      <img src= "/socPhoto/performa_incident/5-c2_datasole.png"
-      </p>
+<img src= "/socPhoto/performa_incident/5-c2_datasole.png"
+</p>
 
 
 > **Actionable:** Immediately block these IPs at perimeter firewall / proxy / DNS and add to EDR blocklist.
@@ -171,8 +171,8 @@ Sample strings and targets reveal intent to harvest stored credentials and syste
 
 
 <p align ="center">
-      <img src= "/socPhoto/performa_incident/Saeed_Ashraf_Elfiky__Performa_Malware.svg"
-      </p>
+<img src= "/socPhoto/performa_incident/Saeed_Ashraf_Elfiky__Performa_Malware.svg"
+</p>
 
 
 - **Initial Access:** T1566: Phishing (malicious attachment)
