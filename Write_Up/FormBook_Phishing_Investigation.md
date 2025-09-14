@@ -1,9 +1,12 @@
 # Incident Writeup - FormBook
 
+<p align ="center">
+      <img src= "/socPhoto/performa_incident/performa_attack_diagram.svg"
+      </p>
 
 ## 1 - Executive Summary
 
-A user opened a phishing email with an attachment named `Performa Inovice P101092292891 TT slip pdf.rar.zip`, which led to execution of a FormBook information stealer on host **`CHRIS-LYONS-PC`** (IP: **10.1.1.97**, MAC: **00:22:15:d4:9a:e7**). I extracted the attachment from the email, hashed it , and matched on VirusTotal as a known malicious malware. The behavioral analysis shows that the sample drops executables, spawns `cmd.exe`, gathers credentials from browsers and Outlook, and contacts multiple Command-and-Control (C2) servers. Immediate containment, credential resets, and forensic collection are recommended!
+A user opened a phishing email with an attachment named `Performa Inovice P101092292891 TT slip pdf.rar.zip`, which led to execution of a FormBook information stealer on host **`CHRIS-LYONS-PC`** (IP: **`10.1.1.97`**, MAC: **`00:22:15:d4:9a:e7`**). I extracted the attachment from the email, hashed it , and matched on VirusTotal as a known malicious malware. The behavioral analysis shows that the sample drops executables, spawns `cmd.exe`, gathers credentials from browsers and Outlook, and contacts multiple Command-and-Control (C2) servers. Immediate containment, credential resets, and forensic collection are recommended!
 
 ---
 
