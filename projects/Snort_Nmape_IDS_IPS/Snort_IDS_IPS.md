@@ -1,5 +1,9 @@
 # Snort IDS demo: detecting pings and Nmap scans with custom rules on Ubuntu
 
+<p align ="center">
+    <img src= "/projects/Snort_Nmape_IDS_IPS/photo/SNORT.svg"
+</p>
+
 ### Project Overview
 
 This project shows how to install and configure **Snort**, an open-source Intrusion Detection System (IDS), to detect suspicious network activity such as **ICMP pings** and **Nmap port scans**.
