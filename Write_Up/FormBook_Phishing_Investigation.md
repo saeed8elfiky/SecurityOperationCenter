@@ -247,7 +247,7 @@ Sample strings and targets reveal intent to harvest stored credentials and syste
 
 ---
 
-## 10 — Suggested Blocking / Snort-style example (simple)
+## 10 - Suggested Blocking - Snort-style example
 
 - **Firewall / Proxy:** block outbound TCP on ports 80/443 to the listed C2 IPs.
     
