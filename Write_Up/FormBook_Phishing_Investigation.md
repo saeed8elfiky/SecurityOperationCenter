@@ -191,7 +191,7 @@ Sample strings and targets reveal intent to harvest stored credentials and syste
     
 - **Command & Control:** T1071: Application Layer Protocol (HTTP/POST to `/ob`)
     
-- **Exfiltration:** Large `Content-Length` POSTs — likely exfiltration of harvested credentials and files
+- **Exfiltration:** Large `Content-Length` POSTs, likely exfiltration of harvested credentials and files
     
 
 ---
