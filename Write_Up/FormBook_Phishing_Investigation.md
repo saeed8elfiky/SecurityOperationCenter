@@ -272,5 +272,7 @@ Sample strings and targets reveal intent to harvest stored credentials and syste
     
 7. **Perform internal credential hunting**: look for reuse of credentials obtained from the compromised host.
     
-
 ---
+
+
+### **Feel free to contact me on** **[LinkedIn](https://www.linkedin.com/in/saeed-elfiky-61188b24b/)**.
