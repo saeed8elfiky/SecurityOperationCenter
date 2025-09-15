@@ -46,16 +46,17 @@ A user opened a phishing email with an attachment named `Performa Inovice P10109
     
 4. **Host & network details collected:**
     
-    - **Infected host IP:** `10.1.1.97`
+      - **Infected host IP:** `10.1.1.97`
   
 <p align ="center">
 <img src= "/socPhoto/performa_incident/infected_ip.png"
 </p>
-        
-    - **Hostname:** `CHRIS-LYONS-PC`
-    - **MAC:** `00:22:15:d4:9a:e7`
 
-        <p align ="center">
+- **Hostname:** `CHRIS-LYONS-PC`
+- **MAC:** `00:22:15:d4:9a:e7`
+
+
+  <p align ="center">
       <img src= "/socPhoto/performa_incident/infected.png"
       </p>
       
@@ -173,7 +174,7 @@ Sample strings and targets reveal intent to harvest stored credentials and syste
 
 ---
 
-## 6  - MITRE ATT&CK Mapping (selected)
+## 6  - MITRE ATT&CK Mapping
 
 
 <p align ="center">
@@ -217,7 +218,7 @@ Sample strings and targets reveal intent to harvest stored credentials and syste
 
 ---
 
-## 8 - Containment, Eradication & Recovery
+## 8 - Containment & Recovery
 
 **Containment (immediate)**
 
