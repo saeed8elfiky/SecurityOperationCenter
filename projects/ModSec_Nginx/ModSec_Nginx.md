@@ -1,6 +1,9 @@
 # ModSecurity + Nginx (step-by-step)
 
+## Summary
+Step-by-step tutorial to compile and install ModSecurity and the ModSecurity-nginx connector, add the OWASP Core Rule Set, and configure Nginx to block attacks. Includes a minimal vulnerable PHP demo (reflected XSS), build/config commands, and the exact file edits needed to enable full protection and verify a 403 block.
 
+---
 
 ### Prerequisites - install packages
 
