@@ -1,6 +1,6 @@
-# Elasticsearch, Kibana, Filebeat & Fluent Bit Setup with Custom Regex Parsing
+# ⚡ Elasticsearch, Kibana, Filebeat & Fluent Bit Setup with Custom Regex Parsing
 
-## Project Overview
+## 1) Project Overview
 
 This project provides a step-by-step guide to installing and configuring the ELK stack (Elasticsearch, Kibana, Filebeat) along with Fluent Bit for advanced log collection and parsing. It covers:
 
@@ -12,7 +12,7 @@ This project provides a step-by-step guide to installing and configuring the ELK
 
 ----
 
-### ***Install Elasticsearch***
+## 2) ***Install Elasticsearch***
 > **Note:** You have to set Static IP to the **Hosting Machine**
 
 #### Import the Elasticsearch PGP key
@@ -35,18 +35,22 @@ echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://arti
 
 1. Install the Elasticsearch Debian package:
 
+Elasticsearch is the search and analytics engine that stores logs in an indexed format. It allows fast querying, filtering, and correlation of log data.
+
 ```shell
 sudo apt-get update && sudo apt-get install elasticsearch
 ```
 
-2- Install Kibana
+2. Install Kibana
+
+Kibana is the web interface for Elasticsearch. It’s used to visualize logs, create dashboards, and run searches.
 
 ```shell
 sudo apt-get update && sudo apt-get install kibana
 ```
 
 ---
-### ***Configure Elasticsearch & Kibana***
+## 3) ***Configure Elasticsearch & Kibana***
 First we will configure the ELK 
 
 ```shell
@@ -82,7 +86,7 @@ sudo nano /etc/kibana/kibana.yml
 </p>
 
 ---
-### ***Access the web***
+### 4) ***Access the web***
 Go to the browser and search for `https://localhost:9200` will ask you for the username and password.
 the default username: `elastic` and to get the password:
 
@@ -97,7 +101,7 @@ sudo ./elasticsearch-reset-password
 ```
 
 
-and it will output the password for you.
+and it will output the password for you. You should see a JSON response with cluster and version details.
 
 Next search for: `http://localhost:5601`
 
@@ -125,7 +129,10 @@ sudo ./kibana-verification-code
 
 
 ---
-### ***Install & Configure filebeat***
+## 5)***Install & Configure filebeat***
+
+**Filebeat** is a log shipper that collects logs from files and forwards them to Elasticsearch.
+
 First go to the official ELK website, and download the filebeat for debian.
 
 <p align ="center">
@@ -171,7 +178,11 @@ You will see the logs from your machine:
 </p>
   
 ---
-### ***Download Fluent-Bit***
+## 6)***Download Fluent-Bit***
+
+**Fluent-Bit** is a lightweight log processor and forwarder. Unlike Filebeat, it is optimized for speed and parsing flexibility.
+We’ll use it to apply custom regex parsers that extract structured fields from raw logs.
+
 First
 
 ```shell
@@ -211,7 +222,7 @@ sudo systemctl start fluent-bit
 ```
 
 -----
-### **Create Regular Expressions**
+## 7)***Create Regular Expressions***
 First go to [rubular](https://rubular.com) 
 
 <p align ="center">
@@ -312,7 +323,7 @@ Explaination:
     - Example: `headquarters`
 
 ---
-### **Create Test logs & Parsers file 
+## 8)**Create Test logs & Parsers file 
 
 ```shell
 sudo nano /var/log/saeed.log
@@ -337,7 +348,7 @@ Ensure these lines are in
 ```
 
 ----
-### **Configure Fluent-Bit**
+## 9) **Configure Fluent-Bit**
 First :
 
 ```shell
@@ -376,7 +387,7 @@ Then ensure to add these lines:
 
 
 ---
-### ***Start Fluent-Bit***
+## 10) ***Start Fluent-Bit***
 ```shell
 cd /opt/fluent-bit/bin
 ./fluent-bit -c /etc/fluent-bit/fluent-bit.conf
