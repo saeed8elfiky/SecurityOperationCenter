@@ -1,6 +1,10 @@
 # Elasticsearch-API-Workflow-with-n8n-and-VirusTotal
 
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/n8n-elk.svg"
+</p>
 
+ 
 ## Project Overview
 This project demonstrates how to create and use an Elasticsearch API key for secure access to indices, integrate it with n8n for workflow automation, and extend the workflow by connecting to the VirusTotal API for IP reputation checks.
 
@@ -33,7 +37,11 @@ curl -u <elastic_username>:<your_password> -X POST "https://<elastic_ip>:9200/_s
 
 **Next** 
 
-From the elastic website use this command to 
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/elk_api_off.png"
+</p>
+
+From the elastic website:
 
 Replace `<api>` with the **Encoded API**
 
@@ -72,7 +80,7 @@ docker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n
 ----
 ## ***Create the workflow***
 Access the n8n editor at `http://localhost:5678`
-
+	
 #### 1) Create Credential
 Name: Elasticsearch account
 - Username: `<elastic_username>`
@@ -80,8 +88,17 @@ Name: Elasticsearch account
 - Base URL: `<elastic_url>`
 - `ignore SSL `
 
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/create_credintials.png"
+</p>
 
 #### 2) Create workflow
+
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/create_workflow.png"
+</p>
+
+
 - deploy `HTTP Request`
 	- configure the autorization process
 	- Methode: `GET`
@@ -89,26 +106,47 @@ Name: Elasticsearch account
 	- Authentication: `Predefined Credential Type`
 	- Credential Type: `Elasticsearch API`
 	- Elasticsearch API: `Elasticsearch account` >
+
 Click `Execute`, now you should see the logs coming from your index:
 
-
+<p align ="center">
+<img src= "/projects/SOAR/screenshots/get_index.png"
+</p>
 
 #### 3) Deploy Split Out
 We use `Split out` to separate each log from the other
 
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/dia.png"
+</p>
+	
 - In fields to Split Out: `<drag and drop the id of the begaining of log>`
 - Include: `No Other Fields` 
 
-
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/split.png"
+</p>
 
 #### 4) IF
 We use **`IF`** to specify which case we should do action about
+
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/dia.png"
+</p>
+	
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/if.png"
+</p>
 
 - Condition: `Drag and drop the value you want to specify`
 - specify which condition state you want to use as a reference, in my case I will use `Is equal to` 
 - I will make the reference value specific **IP Address** 
 
->**Note:** `limit` is used to limit the amount of action per execution
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/dia.png"
+</p>
+
+>**Note:** `limit` is used to limit the amount of action per cycle
 
 
 
@@ -117,15 +155,38 @@ We use **`IF`** to specify which case we should do action about
 #### 1) Create Account on VirusTotal
 Go to [VirusTotal](https://www.virustotal.com/gui/join-us) and create account and get your own API 
 
-
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/virustotal_acc_api.png"
+</p>
 
 #### 2) VirusTotal
+
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/virustotal_acc.png"
+</p>
+	
 **Create Credential** and choose **VirusTotal account**
 - API Token: `<virustotal_api>`
 
 In the right menu search for `VirusTotal HTTP Request`, Then connect the `true` output of `IF` to it.
 
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/dia.png"
+</p>
+
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/vt_conf.png"
+</p>
+
 - Credential for VirusTotal: `VirusTotal account`
 - URL: it will set the url for you and put `/ip_addresses/<the id of the IP u want to scan>`
 
-**Click Execute, it will display the VirusTotal scan's result **
+**Click Execute, it will display the VirusTotal scan's result**
+
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/final_w.png"
+</p>
+
+---
+
+### **Feel free to contact me on** **[LinkedIn](https://www.linkedin.com/in/saeed-elfiky-61188b24b/)**.
