@@ -44,7 +44,7 @@ Inside the file, define your **HOME_NET** (the network you want to protect/monit
 First go to 
 
 ```shell
-sudo nano /etc/snort/rules/local.rules
+sudo nano /etc/snort/rule/local.rule
 ```
 
 Then Add:
