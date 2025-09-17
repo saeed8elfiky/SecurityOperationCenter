@@ -18,14 +18,17 @@ The setup includes:
 
 This project provides a hands-on guide for automating threat intelligence workflows by combining log analysis from Elasticsearch with external reputation checks using VirusTotal.
 
-![Docker](https://img.shields.io/badge/Docker-Ready-blue)
-![n8n](https://img.shields.io/badge/n8n-Workflow-orange)
-![Elasticsearch](https://img.shields.io/badge/Elasticsearch-API-yellow)
+### Prerequisites
+- Ubuntu 20.04 / 22.04 (tested environment)
+- Elasticsearch instance running (remote or local)
+- Docker & Docker Compose installed
+- n8n (latest Docker image)
+- VirusTotal API key (free or premium account)
 
 ----
 
 ## ***Create API for Elasticsearch***
-First write these commands to create the **Elasticsearch API** 
+First, generate an API key that allows secure access to **Elasticsearch indices**.
 
 Replace: `<username>` with your elastic username, `<password>` with your Elastic password and `<elastic_ip>` with the ip of the elastic machine
 
@@ -57,7 +60,7 @@ curl -X GET "https://192.168.1.40:9200/_cat/indices?v=true" \
 
 ---
 ## ***Install Docker & n8n***
-We should install docker first, so we can use to download n8n
+We will deploy n8n, an automation and workflow orchestration tool, using Docker
 
 ```shell
 sudo apt update && sudo apt upgrade -y
@@ -118,7 +121,7 @@ Click `Execute`, now you should see the logs coming from your index:
 </p>
 
 #### 3) Deploy Split Out
-We use `Split out` to separate each log from the other
+We use `Split Out` to separate logs into individual items for easier processing
 
 <p align ="center">
     <img src= "/projects/SOAR/screenshots/dia.png"
@@ -132,7 +135,7 @@ We use `Split out` to separate each log from the other
 </p>
 
 #### 4) IF
-We use **`IF`** to specify which case we should do action about
+This step defines conditions to filter logs (e.g., by IP address)
 
 <p align ="center">
     <img src= "/projects/SOAR/screenshots/dia.png"
