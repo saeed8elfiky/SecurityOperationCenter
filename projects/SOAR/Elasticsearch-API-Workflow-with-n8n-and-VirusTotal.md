@@ -140,7 +140,7 @@ We use **`IF`** to specify which case we should do action about
 
 - Condition: `Drag and drop the value you want to specify`
 - specify which condition state you want to use as a reference, in my case I will use `Is equal to` 
-- I will make the reference value specific **IP Address** 
+- I will make the reference value specific a **IP Address** 
 
 <p align ="center">
     <img src= "/projects/SOAR/screenshots/dia.png"
