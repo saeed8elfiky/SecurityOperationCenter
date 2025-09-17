@@ -1,5 +1,9 @@
 # ⚡ Elasticsearch, Kibana, Filebeat & Fluent Bit Setup with Custom Regex Parsing
 
+<p align ="center">
+    <img src= "/projects/Elasticsearch-SIEM/screenshoot/ELK-fluent-bit.svg"
+</p>
+
 ## 1) Project Overview
 
 This project provides a step-by-step guide to installing and configuring the ELK stack (Elasticsearch, Kibana, Filebeat) along with Fluent Bit for advanced log collection and parsing. It covers:
