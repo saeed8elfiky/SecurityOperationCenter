@@ -18,6 +18,10 @@ The setup includes:
 
 This project provides a hands-on guide for automating threat intelligence workflows by combining log analysis from Elasticsearch with external reputation checks using VirusTotal.
 
+![Docker](https://img.shields.io/badge/Docker-Ready-blue)
+![n8n](https://img.shields.io/badge/n8n-Workflow-orange)
+![Elasticsearch](https://img.shields.io/badge/Elasticsearch-API-yellow)
+
 ----
 
 ## ***Create API for Elasticsearch***
