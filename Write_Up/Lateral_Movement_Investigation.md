@@ -1,6 +1,7 @@
 <p align ="center">
     <img src= "/socPhoto/Saeed_Elfiky__Incident_PsExec.svg"
 </p>
+
 #### Prepared by: Saeed Ashraf Saeed Elfiky 
 #### Lab: [CyberDefenders - PsExec Lateral Movement](https://cyberdefenders.org/blueteam-ctf-challenges/psexec-hunt/)
 
