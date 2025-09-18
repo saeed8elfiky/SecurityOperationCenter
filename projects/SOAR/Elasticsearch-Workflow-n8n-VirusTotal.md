@@ -1,4 +1,4 @@
-# Elasticsearch-API-Workflow-with-n8n-and-VirusTotal
+# Elasticsearch-API Workflow with n8n and VirusTotal
 
 <p align ="center">
     <img src= "/projects/SOAR/screenshots/n8n-elk.svg"
