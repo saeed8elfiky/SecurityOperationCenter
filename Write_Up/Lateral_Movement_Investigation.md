@@ -1,10 +1,10 @@
-#### Prepared by: Saeed Ashraf Saeed Elfiky 
-#### Lab: [CyberDefenders - PsExec Lateral Movement](https://cyberdefenders.org/blueteam-ctf-challenges/psexec-hunt/)
 <p align ="center">
     <img src= "/socPhoto/Saeed_Elfiky__Incident_PsExec.svg"
 </p>
+#### Prepared by: Saeed Ashraf Saeed Elfiky 
+#### Lab: [CyberDefenders - PsExec Lateral Movement](https://cyberdefenders.org/blueteam-ctf-challenges/psexec-hunt/)
 
-#### Environment (per brief):
+### Environment (per brief):
 - LAN: 10.0.0.0/24 
 - Protocol in scope: SMB (TCP/445) 
 - Tool observed: PsExec (Sysinternals) 
