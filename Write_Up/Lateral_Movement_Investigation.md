@@ -1,6 +1,4 @@
-<p align ="center">
-    <img src= "/socPhoto/Saeed_Elfiky__Incident_PsExec.svg"
-</p>
+Incident Report — PsExec Lateral Movement (CyberDefenders Lab)
 
 #### Prepared by: Saeed Ashraf Saeed Elfiky 
 #### Lab: [CyberDefenders - PsExec Lateral Movement](https://cyberdefenders.org/blueteam-ctf-challenges/psexec-hunt/)
@@ -93,6 +91,10 @@ After establishing access on the `SALES-PC`, the attacker pivoted to `10.0.0.131
 - Shares used: `ADMIN$`, `IPC$`
 
 ### 5) Attack Analysis & MITRE ATT&CK Mapping
+
+<p align ="center">
+    <img src= "/socPhoto/Saeed_Elfiky__Incident_PsExec.svg"
+</p>
 
 - **Initial Access (T1566 - Phishing | T1078 - Valid Accounts):**  Iam not sure because there is no information about how the attacker entered the victim's machine.
 
