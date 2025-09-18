@@ -1,7 +1,9 @@
 # Incident Report - PsExec Lateral Movement (CyberDefenders Lab)
 
-#### Prepared by: Saeed Ashraf Saeed Elfiky 
-#### Lab: [CyberDefenders - PsExec Lateral Movement](https://cyberdefenders.org/blueteam-ctf-challenges/psexec-hunt/)
+#### Report Information
+- Prepared by: Saeed Ashraf Saeed Elfiky 
+- Lab: [CyberDefenders - PsExec Lateral Movement](https://cyberdefenders.org/blueteam-ctf-challenges/psexec-hunt/)
+- Date Reported : 12-09-2025
 
 ### Environment (per brief):
 - LAN: 10.0.0.0/24 
