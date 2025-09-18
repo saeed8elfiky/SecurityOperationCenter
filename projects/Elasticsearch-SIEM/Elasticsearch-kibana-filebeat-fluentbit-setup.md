@@ -9,7 +9,8 @@
 This project provides a step-by-step guide to installing and configuring the ELK stack (Elasticsearch, Kibana, Filebeat) along with Fluent Bit for advanced log collection and parsing. It covers:
 
 - Installing and configuring Elasticsearch & Kibana
-- Setting up Filebeat for log forwarding
+- Setting up Filebeat for log forwarding on Ubuntu
+- Setting up winlogBeat for log forwarding on windows
 - Installing Fluent Bit with custom regex-based parsers
 - Integrating logs into Elasticsearch and visualizing them in Kibana
 - Using regular expressions to extract structured fields (e.g., date, time, IPs, ports, users, and sites) from raw logs
