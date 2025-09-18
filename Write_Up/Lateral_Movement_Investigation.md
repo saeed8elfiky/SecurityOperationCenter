@@ -1,4 +1,4 @@
-# Incident Report — PsExec Lateral Movement (CyberDefenders Lab)
+# Incident Report - PsExec Lateral Movement (CyberDefenders Lab)
 
 #### Prepared by: Saeed Ashraf Saeed Elfiky 
 #### Lab: [CyberDefenders - PsExec Lateral Movement](https://cyberdefenders.org/blueteam-ctf-challenges/psexec-hunt/)
