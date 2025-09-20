@@ -32,6 +32,12 @@ winlogbeat.event_logs:
   - name: System
 
   - name: Security
+
+
+  - name: Microsoft-Windows-Sysmon/Operational
+    event_id: 1, 12, 13, 14
+
+  - name: Windows PowerShell
     
 setup.kibana:
 
@@ -46,10 +52,18 @@ output.elasticsearch:
   password: "password"
   pipeline: "winlogbeat-%{[agent.version]}-routing"
   ssl.verification_mode: none
-
 ```
 
-and right click on `winlogbeat.yml` > security > user > edit > users > allow all
+and right click on `winlogbeat.yml` > Properties > security > user > edit > users > allow all
+
+Then go to `secpol.msc` and then Go to 
+- **Advanced Aduit Policy Configuration** > **System Audit Policies** > **Object Access** > `Audit Other Object Access Events` "Success & Failure" 
+- `Audit Process Creation` "Success"
+
+Then go to `gpedit.msc` and then 
+- **Computer Configuration** > **Administrator Templates** > **Windows Components** > **Windows Powershell** > `Turn on Module Logging` Put `*` in module names
+- ``Turn on Powershell Script Block Logging`
+
 
 <p align ="center">
     <img src= "/projects/Elasticsearch-SIEM/screenshoot/allow_all"
