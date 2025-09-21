@@ -16,8 +16,9 @@ The goal of this project is to automate the process of identifying devices and u
 
 
 
-![workflow.png](D:\Courses\We%20Innovate\SOC_Engineering_week\soar.100_task\workflow.png)
-
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/workflow.png"
+</p>
 
 
 ---
@@ -42,7 +43,9 @@ The goal of this project is to automate the process of identifying devices and u
 
 
 
-![logs.png](D:\Courses\We%20Innovate\SOC_Engineering_week\soar.100_task\logs.png)
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/logs.png"
+</p>
 
 
 
@@ -50,15 +53,18 @@ The goal of this project is to automate the process of identifying devices and u
 
 
 
-![split.png](D:\Courses\We%20Innovate\SOC_Engineering_week\soar.100_task\split.png)
-
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/split2.png"
+</p>
 
 
 - **Filtering**: Use the **IF Node** to check whether the source or destination IP equals the malicious IP (`192.168.1.100`).
 
 
 
-![if.png](D:\Courses\We%20Innovate\SOC_Engineering_week\soar.100_task\if.png)
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/if2.png"
+</p>
 
 
 
@@ -66,24 +72,27 @@ The goal of this project is to automate the process of identifying devices and u
 
 
 
-![get_info.png](D:\Courses\We%20Innovate\SOC_Engineering_week\soar.100_task\get_info.png)
-
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/get_info.png"
+</p>
 
 
 - **Notification**: Send alert emails via **Gmail/SMTP Node** to inform users about the malicious communication.
 
 
 
-![sendmail.png](D:\Courses\We%20Innovate\SOC_Engineering_week\soar.100_task\sendmail.png)
-
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/sendmail.png"
+</p>
 
 
 ### Testing
 
 
 
-![mailrecieved.png](D:\Courses\We%20Innovate\SOC_Engineering_week\soar.100_task\mailrecieved.png)
-
+<p align ="center">
+    <img src= "/projects/SOAR/screenshots/mailrecieved.png"
+</p>
 
 
 ---
@@ -95,5 +104,8 @@ The goal of this project is to automate the process of identifying devices and u
 - Improved user awareness with direct email alerts.
 
 - Reduced workload on SOC analysts through automation.
+
+----
+### **Feel free to contact me on** **[LinkedIn](https://www.linkedin.com/in/saeed-elfiky-61188b24b/)**.
 
 
