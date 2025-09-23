@@ -147,5 +147,39 @@ And check the alerts: You should see the alert holding the rule name
 </p>
 
 ---
+
+### **5) Detecting Registry Modification**
+
+create KQL:
+
+```KQL
+(
+  event.module : "powershell" and event.code : "4104" and powershell.file.script_block_text : "*CurrentVersion\\Run*"
+)
+or
+(
+  process.name : "reg.exe" and process.command_line : "*CurrentVersion\\Run*"
+)
+or
+(
+  event.code : "4657" and winlog.event_data.TargetObject : "*\\Software\\Microsoft\\Windows\\CurrentVersion\\Run*"
+)
+or
+(
+  event.module : "sysmon" and event.code : "13" and registry.key : "*\\Software\\Microsoft\\Windows\\CurrentVersion\\Run*"
+)
+
+```
+
+
+The testing command:
+
+```shell
+reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Run /v EvilApp /t REG_SZ /d "C:\Users\Public\Evil.exe" /f
+
+```
+
+
+---
 ### **For more Details**
 **Feel free to contact me on [LinkedIn](https://www.linkedin.com/in/saeed-elfiky-61188b24b/)**.
