@@ -6,7 +6,9 @@ Today we will going to talk about “How to Turn Nginx into a Robust Web Firewal
 
 As a cybersecurity architect, I’ve seen it a thousand times: the high-stakes push to production where security is treated as a "vantage point" rather than a foundation. You deploy a sleek search feature, only to realize you’ve handed attackers a skeleton key.
 
-![diagram.svg](diagram.svg)
+<p align ="center">
+    <img src= "/socPhoto/modsec-diagram.svg"
+</p>
 
 Look at the standard PHP pattern from our source: 
 
@@ -14,7 +16,9 @@ Look at the standard PHP pattern from our source: 
 $q = isset($_GET['q']) ? $_GET['q'] : ''; followed by a raw echo: Search results for: <?php echo $q; ?>.
 ```
 
-![Screenshot 2026-01-28 051704.png](Screenshot_2026-01-28_051704.png)
+<p align ="center">
+    <img src= "/socPhoto/modsec-xss.png"
+</p>
 
 Without sanitization, this isn't just a search bar; it's a direct injection vector for Reflected Cross-Site Scripting (XSS). An attacker doesn't need to breach your database; they just need to trick a user into clicking a link that executes a script in their own browser. Our mission is to move beyond the "hope-based" security of default **Nginx** and weaponize our perimeter using ModSecurity and the OWASP Core Rule Set (CRS).
 
@@ -203,7 +207,9 @@ Contrast the "Before" and "After" states:
 - **Before:** You input a `<script>` tag into the PHP search query, and the page helpfully executes it, proving the vulnerability.
 - **After:** You attempt the same injection, and ModSecurity immediately terminates the connection.
 
-![Screenshot 2026-01-28 051759.png](Screenshot_2026-01-28_051759.png)
+<p align ="center">
+    <img src= "/socPhoto/modsec-403.png"
+</p>
 
 Seeing that "403 Forbidden" screen is the sound of the trap snapping shut. It confirms that the deep packet inspection logic identified the attack pattern and dropped the request before it ever reached your vulnerable PHP script.
 
