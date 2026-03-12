@@ -1,3 +1,6 @@
+![Dashboard Screenshot](logo/abuseipdb-logo.svg)
+![Dashboard Screenshot](logo/virustotal_logo_icon_170249.svg)
+
 # Threat Intel Dashboard CLI
 
 A lightweight, noise-reduced Threat Intelligence dashboard for IPs and Domains, built with Bash.  
