@@ -1,0 +1,191 @@
+#================================== Description ========================================
+# Filebeat Config to send Elasticsearch/Logstash/Kibana logs to Elasticsearch cluster.
+# Uses modern filestream input with container parser (ES 9+ recommended approach)
+
+name: filebeat-elk-monitoring
+
+filebeat.config:
+  modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: false
+
+#================================ Autodiscover =======================================
+# Autodiscover containers and collect logs using filestream with modules
+filebeat.autodiscover:
+  providers:
+    # Elasticsearch containers
+    - type: docker
+      templates:
+        - condition:
+            contains:
+              docker.container.image: elasticsearch
+          config:
+            - module: elasticsearch
+              server:
+                enabled: true
+                input:
+                  type: filestream
+                  id: elasticsearch-server-${data.docker.container.id}
+                  paths: '/var/lib/docker/containers/${data.docker.container.id}/*.log'
+                  parsers:
+                    - container:
+                        stream: all
+                        format: auto
+                  prospector:
+                    scanner:
+                      symlinks: true
+              gc:
+                enabled: true
+                input:
+                  type: filestream
+                  id: elasticsearch-gc-${data.docker.container.id}
+                  paths: '/var/lib/docker/containers/${data.docker.container.id}/*.log'
+                  parsers:
+                    - container:
+                        stream: all
+                        format: auto
+                  prospector:
+                    scanner:
+                      symlinks: true
+              audit:
+                enabled: true
+                input:
+                  type: filestream
+                  id: elasticsearch-audit-${data.docker.container.id}
+                  paths: '/var/lib/docker/containers/${data.docker.container.id}/*.log'
+                  parsers:
+                    - container:
+                        stream: all
+                        format: auto
+                  prospector:
+                    scanner:
+                      symlinks: true
+              slowlog:
+                enabled: true
+                input:
+                  type: filestream
+                  id: elasticsearch-slowlog-${data.docker.container.id}
+                  paths: '/var/lib/docker/containers/${data.docker.container.id}/*.log'
+                  parsers:
+                    - container:
+                        stream: all
+                        format: auto
+                  prospector:
+                    scanner:
+                      symlinks: true
+              deprecation:
+                enabled: true
+                input:
+                  type: filestream
+                  id: elasticsearch-deprecation-${data.docker.container.id}
+                  paths: '/var/lib/docker/containers/${data.docker.container.id}/*.log'
+                  parsers:
+                    - container:
+                        stream: all
+                        format: auto
+                  prospector:
+                    scanner:
+                      symlinks: true
+
+    # Kibana containers
+    - type: docker
+      templates:
+        - condition:
+            contains:
+              docker.container.image: kibana
+          config:
+            - module: kibana
+              log:
+                enabled: true
+                input:
+                  type: filestream
+                  id: kibana-log-${data.docker.container.id}
+                  paths: '/var/lib/docker/containers/${data.docker.container.id}/*.log'
+                  parsers:
+                    - container:
+                        stream: all
+                        format: auto
+                  prospector:
+                    scanner:
+                      symlinks: true
+
+    # Logstash containers
+    - type: docker
+      templates:
+        - condition:
+            contains:
+              docker.container.image: logstash
+          config:
+            - module: logstash
+              log:
+                enabled: true
+                input:
+                  type: filestream
+                  id: logstash-log-${data.docker.container.id}
+                  paths: '/var/lib/docker/containers/${data.docker.container.id}/*.log'
+                  parsers:
+                    - container:
+                        stream: all
+                        format: auto
+                  prospector:
+                    scanner:
+                      symlinks: true
+              slowlog:
+                enabled: true
+                input:
+                  type: filestream
+                  id: logstash-slowlog-${data.docker.container.id}
+                  paths: '/var/lib/docker/containers/${data.docker.container.id}/*.log'
+                  parsers:
+                    - container:
+                        stream: all
+                        format: auto
+                  prospector:
+                    scanner:
+                      symlinks: true
+
+processors:
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+
+# Output to ES directly.
+output.elasticsearch:
+  hosts: '${ELASTICSEARCH_HOST_PORT}'
+  username: '${ELASTIC_USERNAME}'
+  password: '${ELASTIC_PASSWORD}'
+  ssl:
+    verification_mode: "none"
+
+#=================================== Kibana ==========================================
+# Enable setting up Kibana
+# Starting with Beats version 6.0.0, the dashboards are loaded via the Kibana API.
+# This requires a Kibana endpoint configuration.
+setup:
+  kibana:
+    host: '${KIBANA_HOST_PORT}'
+    username: '${ELASTIC_USERNAME}'
+    password: '${ELASTIC_PASSWORD}'
+
+#==================================== Monitoring =====================================
+# Enable Monitoring Beats
+
+monitoring:
+  enabled: true
+  elasticsearch:
+    hosts: '${ELASTICSEARCH_HOST_PORT}'
+    username: '${ELASTIC_USERNAME}'
+    password: '${ELASTIC_PASSWORD}'
+    ssl:
+      verification_mode: "none"
+
+#================================ HTTP Endpoint ======================================
+# Enabled so we can monitor filebeat using filebeat exporter if needed.
+# Each beat can expose internal metrics through a HTTP endpoint. For security
+# reasons the endpoint is disabled by default. This feature is currently experimental.
+# Stats can be access through http://localhost:5066/stats . For pretty JSON output
+# append ?pretty to the URL.
+
+# Defines if the HTTP endpoint is enabled.
+http.enabled: true
+http.host: 0.0.0.0
+http.port: 5066

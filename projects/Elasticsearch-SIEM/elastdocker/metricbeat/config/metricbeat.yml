@@ -1,0 +1,63 @@
+#================================== Description ========================================
+# Metricbeat config for Stack Monitoring in ES 9
+# Replaces deprecated xpack.monitoring.collection.enabled
+
+name: metricbeat-stack-monitoring
+
+#================================ Modules ===============================================
+
+metricbeat.modules:
+
+#------------------------------- Elasticsearch Module ----------------------------------
+- module: elasticsearch
+  xpack.enabled: true
+  period: 10s
+  hosts: ["https://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"]
+  username: "${ELASTIC_USERNAME}"
+  password: "${ELASTIC_PASSWORD}"
+  ssl.enabled: true
+  ssl.certificate_authorities: ["/certs/ca.crt"]
+  ssl.verification_mode: certificate
+  # Collect cluster-wide metrics including all nodes
+  scope: cluster
+
+#------------------------------- Kibana Module -----------------------------------------
+- module: kibana
+  xpack.enabled: true
+  period: 10s
+  hosts: ["https://${KIBANA_HOST}:${KIBANA_PORT}"]
+  username: "${ELASTIC_USERNAME}"
+  password: "${ELASTIC_PASSWORD}"
+  ssl.enabled: true
+  ssl.certificate_authorities: ["/certs/ca.crt"]
+  ssl.verification_mode: certificate
+
+#------------------------------- Logstash Module ---------------------------------------
+- module: logstash
+  xpack.enabled: true
+  period: 10s
+  hosts: ["${LOGSTASH_HOST}:9600"]
+
+#------------------------------- Beat Module (APM Server) ------------------------------
+- module: beat
+  xpack.enabled: true
+  period: 10s
+  hosts: ["https://${APMSERVER_HOST}:${APMSERVER_PORT}"]
+  ssl.enabled: true
+  ssl.certificate_authorities: ["/certs/ca.crt"]
+  ssl.verification_mode: certificate
+
+#================================ Outputs ==============================================
+
+output.elasticsearch:
+  hosts: ["https://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"]
+  username: "${ELASTIC_USERNAME}"
+  password: "${ELASTIC_PASSWORD}"
+  ssl.enabled: true
+  ssl.certificate_authorities: ["/certs/ca.crt"]
+  ssl.verification_mode: certificate
+
+#================================ Logging ==============================================
+
+logging.level: info
+logging.to_stderr: true
