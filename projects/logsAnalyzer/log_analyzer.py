@@ -74,6 +74,7 @@ def export_html(report_data, filepath):
     <body>
         <div class="container">
             <h1>🛡️ Web Log Analysis Dashboard</h1>
+            <p><strong>Created by:</strong> Saeed Elfiky</p>
             <p><strong>Generated on:</strong> {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
             <p><strong>Analyzed File:</strong> {report_data['file_analyzed']}</p>
     """
@@ -185,6 +186,7 @@ def analyze_logs(file_path, json_export=None, html_export=None):
     # -------------------
     print(f"{Colors.CYAN}{'=' * 70}")
     print(f"                     LOG ANALYSIS REPORT")
+    print(f"                     Created by Saeed Elfiky")
     print(f"{'=' * 70}{Colors.RESET}")
     
     if suspicious_events:

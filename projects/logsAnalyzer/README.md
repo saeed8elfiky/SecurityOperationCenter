@@ -1,4 +1,5 @@
 # 🛡️ Web Server Log Analyzer
+**Created by Saeed Elfiky**
 
 A Python-based cybersecurity tool designed to analyze standard web server access logs (like Apache and Nginx). It acts as an active threat-hunting utility by detecting both **signature-based attacks** (like SQL Injection, XSS, and Path Traversal) and **behavioral anomalies** (like high-volume scraping and brute-force attempts).
 
