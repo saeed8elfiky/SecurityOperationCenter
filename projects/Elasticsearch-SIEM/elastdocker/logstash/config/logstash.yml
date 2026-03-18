@@ -1,7 +1,0 @@
----
-# Logstash 9: API settings use 'api.http.*' namespace
-api.http.host: "0.0.0.0"
-
-# ES 9: xpack.monitoring is deprecated
-# Stack Monitoring is now handled by Metricbeat (see docker-compose.monitor.yml)
-monitoring.enabled: false
