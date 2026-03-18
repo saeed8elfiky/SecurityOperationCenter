@@ -1,11 +1,20 @@
-#  Web Server Log Analyzer
+# 🛡️ The Tesseract: Web Threat Analysis Engine
 **Created by Saeed Elfiky**
 
-A Python-based cybersecurity tool designed to analyze standard web server access logs (like Apache and Nginx). It acts as an active threat-hunting utility by detecting both **signature-based attacks** (like SQL Injection, XSS, and Path Traversal) and **behavioral anomalies** (like high-volume scraping and brute-force attempts).
+```text
+ _____ _            _____                              _   
+|_   _| |__   ___  |_   _|__  ___ ___  ___ _ __ __ _  ___| |_ 
+  | | | '_ \ / _ \   | |/ _ \/ __/ __|/ _ \ '__/ _` |/ __| __|
+  | | | | | |  __/   | |  __/\__ \__ \  __/ | | (_| | (__| |_ 
+  |_| |_| |_|\___|   |_|\___||___/___/\___|_|  \__,_|\___|\__|
+      :: 5-Dimensional Web Threat Analysis Engine ::
+```
+
+A Python-based cybersecurity tool designed to parse standard web server access logs (like Apache and Nginx). It acts as an active threat-hunting utility by transcending chaotic log data and detecting both **signature-based attacks** (like SQL Injection, XSS, and Path Traversal) and **behavioral anomalies** (like high-volume scraping and brute-force attempts).
 
 ---
 
-##  Features
+## ✨ Features
 
 * **Signature Detection:** Uses robust Regex to spot malicious payloads inside requested URLs.
   * SQL Injection (`OR 1=1`, `UNION SELECT`)
@@ -20,14 +29,14 @@ A Python-based cybersecurity tool designed to analyze standard web server access
 
 ---
 
-##  Prerequisites
+## ⚙️ Prerequisites
 
 * Python 3.x installed on your operating system.
 * No external libraries are required. The script safely relies purely on Python's robust built-in modules (`re`, `argparse`, `os`, `collections`, `urllib`).
 
 ---
 
-##  Installation & Usage
+## 🚀 Installation & Usage
 
 1. Open a terminal, command prompt, or PowerShell window.
 2. Navigate to the project directory:
@@ -62,7 +71,7 @@ A Python-based cybersecurity tool designed to analyze standard web server access
 
 ---
 
-##  Interpreting the Output
+## 🎨 Interpreting the Output
 
 The tool smartly uses native terminal color codes to help prioritize critical situations rapidly:
 * 🔵 **Blue:** Section headers and baseline report information.
@@ -73,7 +82,7 @@ The tool smartly uses native terminal color codes to help prioritize critical si
 
 ---
 
-##  Extending the Tool
+## 📝 Extending the Tool
 If you wish to scale this project up later, consider adding:
 1. **Dynamic Geolocation Data:** Integrate an IP look-up library like `geoip2` to immediately display down to the city/country where the attacks are originating.
 2. **Dashboard UI Integration:** Attach an export flag (e.g., `-json`) to print the final analysis array into a JSON file, which could be ingested by a web dashboard or a larger SIEM system.

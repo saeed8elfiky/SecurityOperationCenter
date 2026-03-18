@@ -16,6 +16,7 @@ class Colors:
     RED = '\033[91m'
     GREEN = '\033[92m'
     YELLOW = '\033[93m'
+    ORANGE = '\033[38;5;208m'
     BLUE = '\033[94m'
     CYAN = '\033[96m'
     BOLD = '\033[1m'
@@ -28,6 +29,16 @@ PATTERNS = {
     "Path Traversal": re.compile(r"(\.\./)|(\.\.%2f)|(%2e%2e%2f)|(%2e%2e/)", re.IGNORECASE),
     "Malicious User-Agent (Scanners)": re.compile(r"(nikto|nmap|sqlmap|dirbuster|zmcat|masscan)", re.IGNORECASE)
 }
+
+LOGO = r"""
+ _____ _            _____                              _   
+|_   _| |__   ___  |_   _|__  ___ ___  ___ _ __ __ _  ___| |_ 
+  | | | '_ \ / _ \   | |/ _ \/ __/ __|/ _ \ '__/ _` |/ __| __|
+  | | | | | |  __/   | |  __/\__ \__ \  __/ | | (_| | (__| |_ 
+  |_| |_| |_|\___|   |_|\___||___/___/\___|_|  \__,_|\___|\__|
+      :: 5-Dimensional Web Threat Analysis Engine ::
+                 Created by Saeed Elfiky
+"""
 
 def parse_log_line(line):
     """Parses a single line of an Apache/Nginx combined log format."""
@@ -73,7 +84,7 @@ def export_html(report_data, filepath):
     </head>
     <body>
         <div class="container">
-            <h1>🛡️ Web Log Analysis Dashboard</h1>
+            <h1>🛡️ The Tesseract: Web Log Dashboard</h1>
             <p><strong>Created by:</strong> Saeed Elfiky</p>
             <p><strong>Generated on:</strong> {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
             <p><strong>Analyzed File:</strong> {report_data['file_analyzed']}</p>
@@ -129,6 +140,7 @@ def export_html(report_data, filepath):
 
 
 def analyze_logs(file_path, json_export=None, html_export=None):
+    print(f"{Colors.ORANGE}{LOGO}{Colors.RESET}")
     print(f"{Colors.BLUE}[*] Starting Log Analysis on: {Colors.BOLD}{file_path}{Colors.RESET}\n")
     
     suspicious_events = []
@@ -185,7 +197,7 @@ def analyze_logs(file_path, json_export=None, html_export=None):
     # CLI REPORT
     # -------------------
     print(f"{Colors.CYAN}{'=' * 70}")
-    print(f"                     LOG ANALYSIS REPORT")
+    print(f"                     THE TESSERACT ANALYSIS REPORT")
     print(f"                     Created by Saeed Elfiky")
     print(f"{'=' * 70}{Colors.RESET}")
     
@@ -232,7 +244,7 @@ def analyze_logs(file_path, json_export=None, html_export=None):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Cyber Security Web Log Analyzer")
+    parser = argparse.ArgumentParser(description="The Tesseract - Web Threat Analysis Engine")
     parser.add_argument("-f", "--file", required=True, help="Path to the access.log file to analyze")
     parser.add_argument("-j", "--json", help="Path to output the report as a JSON file (e.g., report.json)")
     parser.add_argument("-H", "--html", help="Path to output the report as an HTML dashboard (e.g., report.html)")
