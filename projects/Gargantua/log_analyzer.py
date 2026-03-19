@@ -84,7 +84,7 @@ def export_html(report_data, filepath):
     </head>
     <body>
         <div class="container">
-            <h1>🛡️ Gargantua: Web Log Dashboard</h1>
+            <h1>Gargantua: Log Analysis Result</h1>
             <p><strong>Created by:</strong> Saeed Elfiky</p>
             <p><strong>Generated on:</strong> {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
             <p><strong>Analyzed File:</strong> {report_data['file_analyzed']}</p>
