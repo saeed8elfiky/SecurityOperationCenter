@@ -43,19 +43,19 @@ A Python-based cybersecurity tool designed to parse standard web server access l
 1. Open a terminal, command prompt, or PowerShell window.
 2. Navigate to the project directory:
    ```bash
-   cd logsAnalyzer/
+   cd Gargantua/
    ```
 3. Run the script and pass the path to your target `.log` file as an argument using the `-f` flag. 
    
    **Test run the analyzer using the provided dummy log file:**
    ```bash
-   python log_analyzer.py -f file.log
+   python Gargantua.py -f file.log
    ```
 
 4. **Exporting Custom Reports:**
    You can easily output the threat analysis to an HTML dashboard or a structured JSON file for SIEM ingestion using the `-H` and `-j` flags respectively:
    ```bash
-   python log_analyzer.py -f dummy_access.log -j report.json -H report.html
+   python Gargantua.py -f dummy_access.log -j report.json -H report.html
    ```
 
 5. **Running against a real server:**
@@ -63,12 +63,12 @@ A Python-based cybersecurity tool designed to parse standard web server access l
    
    *(Example for an Apache server installed locally via XAMPP):*
    ```bash
-   python log_analyzer.py -f "C:\xampp\apache\logs\access.log"
+   python Gargantua.py -f "C:\xampp\apache\logs\access.log"
    ```
 
    *(Example for a Linux Server):*
    ```bash
-   python log_analyzer.py -f "/var/log/apache2/access.log"
+   python Gargantua.py -f "/var/log/apache2/access.log"
    ```
 
 ---
