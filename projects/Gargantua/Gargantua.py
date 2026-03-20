@@ -3,6 +3,7 @@ import argparse
 import os
 import json
 import html
+import csv
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -25,7 +26,6 @@ class Colors:
     BOLD = '\033[1m'
     RESET = '\033[0m'
 
-# Define regular expressions for malicious signatures / patterns
 PATTERNS = {
     "SQL Injection": re.compile(r"(%27)|(\')|(--)|(%23)|(#)|(UNION.*SELECT)|(OR.*1=1)", re.IGNORECASE),
     "Cross-Site Scripting (XSS)": re.compile(r"(%3C)|(<)\s*(script|iframe|img|svg|body|onload|onerror)", re.IGNORECASE),
@@ -51,9 +51,8 @@ LOGO = r"""
 GEO_CACHE = {}
 
 def get_geo(ip):
-    """Fetches geolocation data for a given IP address."""
     if ip.startswith(('192.168.', '10.', '172.', '127.')) or ip == '::1':
-        return "[Local IP]"
+        return "[Local]"
     if ip in GEO_CACHE:
         return GEO_CACHE[ip]
     try:
@@ -71,10 +70,7 @@ def get_geo(ip):
     return "[Unknown Location]"
 
 def parse_log_line(line):
-    """Parses a single line of an Apache/Nginx combined log or JSON format."""
     line = line.strip()
-    
-    # Attempt to parse as JSON (e.g. Cloudflare, Traefik, AWS ALB)
     if line.startswith('{') and line.endswith('}'):
         try:
             data = json.loads(line)
@@ -85,24 +81,16 @@ def parse_log_line(line):
             ua = data.get('request_User-Agent') or data.get('user_agent') or data.get('user-agent') or ''
             time_str = data.get('time') or data.get('@timestamp') or ''
             if ip and req:
-                return {
-                    'ip': ip, 'time': time_str, 'request': req, 
-                    'status': status, 'size': size, 'user_agent': ua
-                }
+                return {'ip': ip, 'time': time_str, 'request': req, 'status': status, 'size': size, 'user_agent': ua}
         except Exception:
             pass
 
-    # Standard Apache/Nginx Combined Format
-    log_pattern = re.compile(
-        r'(?P<ip>\S+) \S+ \S+ \[(?P<time>.*?)\] "(?P<request>.*?)" (?P<status>\d{3}) (?P<size>\S+)(?: "(?P<referer>.*?)")?(?: "(?P<user_agent>.*?)")?'
-    )
+    log_pattern = re.compile(r'(?P<ip>\S+) \S+ \S+ \[(?P<time>.*?)\] "(?P<request>.*?)" (?P<status>\d{3}) (?P<size>\S+)(?: "(?P<referer>.*?)")?(?: "(?P<user_agent>.*?)")?')
     match = log_pattern.match(line)
-    if match:
-        return match.groupdict()
+    if match: return match.groupdict()
     return None
 
 def export_json(report_data, filepath):
-    """Exports the analysis data to a JSON file."""
     try:
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(report_data, f, indent=4)
@@ -110,8 +98,60 @@ def export_json(report_data, filepath):
     except Exception as e:
         print(f"{Colors.RED}[!] Error exporting JSON: {e}{Colors.RESET}")
 
+def export_md(report_data, filepath):
+    md = f"# Gargantua Web Threat Analysis Report\n**Analyzed File:** `{report_data['file_analyzed']}`\n\n"
+    
+    if report_data["suspicious_events"]:
+        md += "## Malicious Events (Signatures)\n| IP | Location | Threat Type | Occurrences |\n|---|---|---|---|\n"
+        for ev in report_data["suspicious_events"]:
+            md += f"| `{ev['ip']}` | {get_geo(ev['ip'])} | {ev['type']} | {ev['count']} |\n"
+            
+    if report_data.get("data_exfil_events"):
+        md += "\n## Data Exfiltration Anomalies (High Byte Transfer > 20MB)\n| IP | Location | Megabytes | Target Request |\n|---|---|---|---|\n"
+        for ev in report_data["data_exfil_events"]:
+            md += f"| `{ev['ip']}` | {get_geo(ev['ip'])} | {int(ev['size'])/1000000:.2f} MB | `{ev['request']}` |\n"
+            
+    if report_data.get("dos_ips"):
+        md += "\n## Severe Traffic (Potential DoS)\n| IP | Location | Peak RPM |\n|---|---|---|\n"
+        for ip, count in report_data["dos_ips"].items():
+            md += f"| `{ip}` | {get_geo(ip)} | {count} |\n"
+            
+    if report_data.get("high_fuzzing"):
+        md += "\n## Precision Directory Fuzzing\n| IP | Location | 40x Errors targeting Hidden Files |\n|---|---|---|\n"
+        for ip, count in report_data["high_fuzzing"].items():
+            md += f"| `{ip}` | {get_geo(ip)} | {count} |\n"
+
+    if report_data.get("high_lazy_bots"):
+        md += "\n## Automated Lazy Bot Tooling\n| IP | Location | Null/Automated User-Agent Requests |\n|---|---|---|\n"
+        for ip, count in report_data["high_lazy_bots"].items():
+            md += f"| `{ip}` | {get_geo(ip)} | {count} |\n"
+
+    try:
+        with open(filepath, 'w', encoding='utf-8') as f: f.write(md)
+        print(f"{Colors.GREEN}[+] Markdown report exported to: {filepath}{Colors.RESET}")
+    except Exception as e:
+        print(f"{Colors.RED}[!] Error exporting Markdown: {e}{Colors.RESET}")
+
+def export_csv(report_data, filepath):
+    try:
+        with open(filepath, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(["Trigger_Type", "Source_IP", "Details", "Count"])
+            for ev in report_data.get("suspicious_events", []):
+                writer.writerow(["Signature Alert", ev['ip'], ev['type'], ev['count']])
+            for ip, count in report_data.get("dos_ips", {}).items():
+                writer.writerow(["DoS/Scraping", ip, "Severe Traffic RPM", count])
+            for ev in report_data.get("data_exfil_events", []):
+                writer.writerow(["Data Exfiltration", ev['ip'], f"Transferred {int(ev['size'])/1000000:.2f} MB", 1])
+            for ip, count in report_data.get("high_fuzzing", {}).items():
+                writer.writerow(["Directory Fuzzing", ip, "Hidden File Scans", count])
+            for ip, count in report_data.get("high_5xx", {}).items():
+                writer.writerow(["Server Error Exploit", ip, "50x Error Count", count])
+        print(f"{Colors.GREEN}[+] CSV report exported to: {filepath}{Colors.RESET}")
+    except Exception as e:
+         print(f"{Colors.RED}[!] Error exporting CSV: {e}{Colors.RESET}")
+
 def export_html(report_data, filepath):
-    """Exports the analysis data to a styled HTML dashboard."""
     html_content = f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -140,12 +180,12 @@ def export_html(report_data, filepath):
             <h1>Gargantua: Logs Report</h1>
             <p><strong>Created by:</strong> Saeed Elfiky</p>
             <p><strong>Generated on:</strong> {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
-            <p><strong>Analyzed File:</strong> {report_data['file_analyzed']}</p>
+            <p><strong>Analyzed File:</strong> {report_data.get('file_analyzed', 'Unknown')}</p>
     """
-
+    
     # Section 1: Signature Detections
     html_content += "<h2>Suspicious Events (Signatures)</h2>"
-    if report_data["suspicious_events"]:
+    if report_data.get("suspicious_events"):
         html_content += """
         <table>
             <tr><th>Line</th><th>Source IP</th><th>Location</th><th>Threat Type</th><th>Occurrences</th><th>Request Payload Snippet</th></tr>
@@ -172,84 +212,17 @@ def export_html(report_data, filepath):
             </div>
         </div>
     """
-
-    # Section 2: Advanced Behavioral Analytics
-    html_content += "<h2>Advanced Behavioral Analytics</h2>"
-
-    if report_data.get("high_5xx"):
-        html_content += "<h3>High Internal Server Errors (50x) - Potential App Exploits/Crashes</h3>"
-        html_content += "<table><tr><th>Source IP</th><th>Location</th><th>50x Error Count</th></tr>"
-        for ip, count in report_data["high_5xx"].items():
-            loc = get_geo(ip)
-            html_content += f"<tr class='warning'><td><strong>{ip}</strong></td><td>{loc}</td><td>{count}</td></tr>"
-        html_content += "</table>"
-
-    if report_data.get("high_sensitive"):
-        html_content += "<h3>Targeted Brute-Force Activity</h3>"
-        html_content += "<table><tr><th>Source IP</th><th>Location</th><th>POSTs to Sensitive Endpoints</th></tr>"
-        for ip, count in report_data["high_sensitive"].items():
-            loc = get_geo(ip)
-            html_content += f"<tr class='warning'><td><strong>{ip}</strong></td><td>{loc}</td><td>{count}</td></tr>"
-        html_content += "</table>"
-
-    if report_data.get("suspicious_methods"):
-        html_content += "<h3>Unusual HTTP Methods (Reconnaissance)</h3>"
-        html_content += "<table><tr><th>Source IP</th><th>Location</th><th>Methods Used</th></tr>"
-        for ip, methods in report_data["suspicious_methods"].items():
-            loc = get_geo(ip)
-            html_content += f"<tr class='warning'><td><strong>{ip}</strong></td><td>{loc}</td><td><span class='badge-recon'>{', '.join(methods)}</span></td></tr>"
-        html_content += "</table>"
         
-    if not (report_data.get("high_5xx") or report_data.get("high_sensitive") or report_data.get("suspicious_methods")):
-        html_content += "<p class='info'>No advanced anomalies detected.</p>"
-
-    # Section 3: High Traffic / Volume
-    html_content += "<h2>Traffic Anomalies (DoS / Scraping)</h2>"
-    
-    # DoS Attack Level
-    if report_data.get("dos_ips"):
-        html_content += "<h3>Severe Traffic (Potential DoS Attacks)</h3>"
-        html_content += "<table><tr><th>Source IP</th><th>Location</th><th>Peak Requests/Minute</th><th>Status</th></tr>"
-        for ip, count in report_data["dos_ips"].items():
-            loc = get_geo(ip)
-            html_content += f"<tr class='warning'><td><strong>{ip}</strong></td><td>{loc}</td><td>{count}</td><td><span class='threat-badge' style='background-color:#c0392b;'>DoS/DDoS</span></td></tr>"
-        html_content += "</table>"
-        
-    # Scraping Level
-    if report_data.get("scraping_ips"):
-        html_content += "<h3>High Traffic (Potential Scraping / Bots)</h3>"
-        html_content += "<table><tr><th>Source IP</th><th>Location</th><th>Peak Requests/Minute</th><th>Status</th></tr>"
-        for ip, count in report_data["scraping_ips"].items():
-            loc = get_geo(ip)
-            html_content += f"<tr class='warning'><td><strong>{ip}</strong></td><td>{loc}</td><td>{count}</td><td><span class='threat-badge' style='background-color:#e67e22;'>Scraping</span></td></tr>"
-        html_content += "</table>"
-
-    if not report_data.get("dos_ips") and not report_data.get("scraping_ips"):
-        html_content += "<p class='info'>Request volumes are within normal thresholds (No DoS/Scraping detected).</p>"
-
-    # Section 4: High Failures
-    html_content += "<h2>High 40x Error Rates (Potential Directory Scanning / File Discovery)</h2>"
-    if report_data["high_failure_ips"]:
-        html_content += "<table><tr><th>Source IP</th><th>Location</th><th>Failure Count</th></tr>"
-        for ip, count in report_data["high_failure_ips"].items():
-            loc = get_geo(ip)
-            html_content += f"<tr class='warning'><td><strong>{ip}</strong></td><td>{loc}</td><td>{count}</td></tr>"
-        html_content += "</table>"
-    else:
-        html_content += "<p class='info'>No unusually high authentication or resource failure rates detected.</p>"
-
-    # Section 5: Fake Bots
-    if report_data.get("fake_bots"):
-        html_content += "<h2>Fake Search Engine Bots (Spoofed User Agents)</h2>"
-        html_content += "<table><tr><th>Source IP</th><th>Location</th><th>Spoofed User-Agent</th></tr>"
-        for ip, ua in report_data["fake_bots"].items():
-            loc = get_geo(ip)
-            html_content += f"<tr class='warning'><td><strong>{ip}</strong></td><td>{loc}</td><td><span class='code-snippet'>{html.escape(ua)}</span></td></tr>"
+    if report_data.get("data_exfil_events"):
+        html_content += "<h2>Data Exfiltration (Large Byte Transfer)</h2><table><tr><th>IP</th><th>Location</th><th>File Transfer Size</th><th>Request</th></tr>"
+        for event in report_data["data_exfil_events"]:
+            mb_size = int(event['size']) / 1_000_000
+            html_content += f"<tr class='warning'><td><strong>{event['ip']}</strong></td><td>{get_geo(event['ip'])}</td><td>{mb_size:.2f} MB</td><td><span class='code-snippet'>{html.escape(event['request'])}</span></td></tr>"
         html_content += "</table>"
 
     # Prepare Threat Type Distribution for Chart.js
     threat_counts = defaultdict(int)
-    if "suspicious_events" in report_data:
+    if report_data.get("suspicious_events"):
         for event in report_data["suspicious_events"]:
             threat_counts[event['type']] += event['count']
     threat_labels = list(threat_counts.keys())
@@ -308,65 +281,75 @@ def export_html(report_data, filepath):
         print(f"{Colors.RED}[!] Error exporting HTML: {e}{Colors.RESET}")
 
 
-def analyze_logs(file_path, json_export=None, html_export=None):
+def analyze_logs(file_path, json_export=None, html_export=None, md_export=None, csv_export=None):
     print(f"{Colors.ORANGE}{LOGO}{Colors.RESET}")
     print(f"{Colors.BLUE}[*] Starting Log Analysis on: {Colors.BOLD}{file_path}{Colors.RESET}\n")
     
     suspicious_events_dict = {}
-    claimed_bots = {}
     ip_requests = defaultdict(int)
     ip_failed_codes = defaultdict(int)
     ip_5xx_codes = defaultdict(int)
     ip_sensitive_posts = defaultdict(int)
     ip_suspicious_methods = defaultdict(list)
-    ip_time_requests = defaultdict(lambda: defaultdict(int)) # Maps IP -> Minute -> Count
+    ip_time_requests = defaultdict(lambda: defaultdict(int))
+    
+    lazy_bots = defaultdict(int)
+    ip_dir_fuzzing = defaultdict(int)
+    data_exfil_events = []
     
     sensitive_endpoints = re.compile(r"(/wp-login\.php|/admin|/cpanel|/login|/administrator|/xmlrpc\.php)", re.IGNORECASE)
+    hidden_files_pattern = re.compile(r"/\.(env|git|bak|old|zip|sql|tar|swp)|/\w+\.(bak|old|zip|sql|tar\.gz|swp)$", re.IGNORECASE)
+    lazy_bot_pattern = re.compile(r"(python-requests|urllib|curl|wget|java/)", re.IGNORECASE)
     unusual_methods = {"PUT", "DELETE", "TRACE", "OPTIONS", "CONNECT"}
     
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
             for line_no, line in enumerate(f, 1):
                 data = parse_log_line(line)
-                if not data:
-                    continue
+                if not data: continue
                 
                 request_decoded = unquote(data['request'])
-                user_agent = data.get('user_agent', '')
+                user_agent = data.get('user_agent') or ''
                 ip = data['ip']
                 status = data['status']
-                timestamp = data.get('time', '')
                 
-                # Extract minute identifier
+                int_size = 0
+                if data['size'] != '-':
+                    try: int_size = int(data['size'])
+                    except ValueError: pass
+                
+                # Tuned Data Exfiltration (Ignore Media, Flag Archives / Anomalous Size)
+                if status == '200' and int_size > 500_000:
+                    if not re.search(r'\.(mp4|mov|avi|webm|mkv|jpg|jpeg|png|gif|webp|svg|css|js|woff|woff2|ttf|eot|ico|iso|dmg|exe|pkg)(\?.*)?$', request_decoded, re.IGNORECASE):
+                        if int_size > 5_000_000 or re.search(r'\.(sql|bak|zip|tar|gz|bz2|7z|db|sqlite|dump|csv|log|pcap)(\?.*)?$', request_decoded, re.IGNORECASE):
+                            data_exfil_events.append({'ip': ip, 'first_line': line_no, 'size': int_size, 'request': request_decoded})
+                    
+                # Check for Blind/Lazy Bots
+                if lazy_bot_pattern.search(user_agent) or user_agent == '' or user_agent == '-':
+                    lazy_bots[ip] += 1
+                
+                # Check for Precision Fuzzing
+                if status.startswith('4') and hidden_files_pattern.search(request_decoded):
+                    ip_dir_fuzzing[ip] += 1
+
+                timestamp = data.get('time', '')
                 time_parts = timestamp.split(':')
-                if len(time_parts) >= 3:
-                    minute_str = f"{time_parts[0]}:{time_parts[1]}:{time_parts[2]}"
-                else:
-                    minute_str = "unknown"
+                minute_str = f"{time_parts[0]}:{time_parts[1]}:{time_parts[2]}" if len(time_parts) >= 3 else "unknown"
                 
                 ip_requests[ip] += 1
                 ip_time_requests[ip][minute_str] += 1
                 
-                if status.startswith('4'):
-                    ip_failed_codes[ip] += 1
-                elif status.startswith('5'):
-                    ip_5xx_codes[ip] += 1
+                if status.startswith('4'): ip_failed_codes[ip] += 1
+                elif status.startswith('5'): ip_5xx_codes[ip] += 1
                 
-                # Method parsing for advanced analytics
-                method = "UNKNOWN"
                 parts = request_decoded.split()
-                if len(parts) >= 1:
-                    method = parts[0].upper()
+                method = parts[0].upper() if len(parts) >= 1 else "UNKNOWN"
                     
-                if method in unusual_methods:
-                    if method not in ip_suspicious_methods[ip]:
-                        ip_suspicious_methods[ip].append(method)
+                if method in unusual_methods and method not in ip_suspicious_methods[ip]:
+                    ip_suspicious_methods[ip].append(method)
                         
                 if method == "POST" and sensitive_endpoints.search(request_decoded):
                     ip_sensitive_posts[ip] += 1
-                
-                if user_agent and re.search(r'(Googlebot|Bingbot|Baiduspider|YandexBot|Slurp|DuckDuckBot)', user_agent, re.IGNORECASE):
-                    claimed_bots[ip] = user_agent
                 
                 for attack_type, pattern in PATTERNS.items():
                     matched = False
@@ -377,53 +360,32 @@ def analyze_logs(file_path, json_export=None, html_export=None):
                             payload = user_agent
                     else:
                         if pattern.search(request_decoded):
-                            matched = True
-                            payload = request_decoded
+                            matched, payload = True, request_decoded
                         elif user_agent and pattern.search(user_agent):
-                            matched = True
-                            payload = user_agent
+                            matched, payload = True, user_agent
 
                     if matched:
                         event_key = (ip, attack_type)
                         if event_key not in suspicious_events_dict:
-                            suspicious_events_dict[event_key] = {
-                                'first_line': line_no,
-                                'count': 1,
-                                'ip': ip,
-                                'type': attack_type,
-                                'payload': payload
-                            }
+                            suspicious_events_dict[event_key] = {'first_line': line_no, 'count': 1, 'ip': ip, 'type': attack_type, 'payload': payload}
                         else:
                             suspicious_events_dict[event_key]['count'] += 1
 
     except FileNotFoundError:
         print(f"{Colors.RED}[!] Error: File '{file_path}' not found.{Colors.RESET}")
         return
-    except Exception as e:
-        print(f"{Colors.RED}[!] Error parsing logs: {e}{Colors.RESET}")
-        return
 
     suspicious_events = list(suspicious_events_dict.values())
-
-    # Rate-based behavioral anomalies (Requests Per Minute)
-    ip_max_rpm = {}
-    for ip, minutes in ip_time_requests.items():
-        ip_max_rpm[ip] = max(minutes.values()) if minutes else 0
+    ip_max_rpm = {ip: max(minutes.values()) if minutes else 0 for ip, minutes in ip_time_requests.items()}
 
     scraping_ips = {ip: rpm for ip, rpm in ip_max_rpm.items() if 60 <= rpm < 150}
     dos_ips = {ip: rpm for ip, rpm in ip_max_rpm.items() if rpm >= 150}
     
-    # Analyze Advanced Behaviours
     high_failures = {ip: count for ip, count in ip_failed_codes.items() if count >= 20}
     high_5xx = {ip: count for ip, count in ip_5xx_codes.items() if count >= 5}
     high_sensitive = {ip: count for ip, count in ip_sensitive_posts.items() if count >= 5}
-
-    # Detect Fake Bots
-    fake_bots = {}
-    suspicious_ips = {evt['ip'] for evt in suspicious_events}
-    for ip, ua in claimed_bots.items():
-        if ip in dos_ips or ip in scraping_ips or ip in suspicious_ips or ip in high_5xx or ip in high_sensitive:
-            fake_bots[ip] = ua
+    high_fuzzing = {ip: count for ip, count in ip_dir_fuzzing.items() if count >= 3}
+    high_lazy_bots = {ip: count for ip, count in lazy_bots.items() if count >= 10}
 
     # -------------------
     # CLI REPORT
@@ -435,96 +397,74 @@ def analyze_logs(file_path, json_export=None, html_export=None):
     
     if suspicious_events:
         print(f"\n{Colors.RED}[!] ALERT: Found {len(suspicious_events)} Unique Suspicious Events (Aggregated):{Colors.RESET}")
-        for event in suspicious_events:
+        for event in suspicious_events[:50]:
             loc = get_geo(event['ip'])
             print(f"  {Colors.YELLOW}Line: {event['first_line']:<4}{Colors.RESET} | {Colors.CYAN}IP: {event['ip']} {loc:<15}{Colors.RESET} | {Colors.RED}Threat: {event['type']}{Colors.RESET} | {Colors.ORANGE}Occurrences: {event['count']}{Colors.RESET}")
             trimmed_payload = (event['payload'][:80] + '...') if len(event['payload']) > 80 else event['payload']
             print(f"  {Colors.BOLD}Payload :{Colors.RESET} {trimmed_payload}")
             print(f"{Colors.CYAN}{'-' * 70}{Colors.RESET}")
-    else:
-        print(f"\n{Colors.GREEN}[+] No signature-based web attacks detected.{Colors.RESET}")
 
-    # Advanced Analysis Triggers
-    print(f"\n{Colors.BLUE}[*] ADVANCED ANALYTICS: INTERNAL SERVER ERRORS (50x) (Potential Exploits):{Colors.RESET}")
-    if high_5xx:
-        for ip, count in high_5xx.items():
-            loc = get_geo(ip)
-            print(f"  {Colors.RED}[!!!] CRITICAL: IP Address {Colors.BOLD}{ip} {loc}{Colors.RESET}{Colors.RED} caused {count} internal server errors!{Colors.RESET}")
+    # Data Exfiltration
+    print(f"\n{Colors.BLUE}[*] ADVANCED ANALYTICS: DATA EXFILTRATION (Large File DLs > 20MB):{Colors.RESET}")
+    if data_exfil_events:
+        for ev in data_exfil_events:
+            loc = get_geo(ev['ip'])
+            mb = int(ev['size']) / 1_000_000
+            print(f"  {Colors.RED}[!!!] HIGH TRANSFER: IP {Colors.BOLD}{ev['ip']} {loc}{Colors.RESET}{Colors.RED} transferred {mb:.2f} MB!{Colors.RESET}")
     else:
-        print(f"  {Colors.GREEN}[+] No IPs generating unusual 50x errors.{Colors.RESET}")
+        print(f"  {Colors.GREEN}[+] No anomalous high-volume data transfers.{Colors.RESET}")
 
-    print(f"\n{Colors.BLUE}[*] ADVANCED ANALYTICS: SENSITIVE ENDPOINT BRUTE-FORCING:{Colors.RESET}")
-    if high_sensitive:
-        for ip, count in high_sensitive.items():
+    print(f"\n{Colors.BLUE}[*] ADVANCED ANALYTICS: PRECISION DIRECTORY FUZZING:{Colors.RESET}")
+    if high_fuzzing:
+        for ip, count in high_fuzzing.items():
             loc = get_geo(ip)
-            print(f"  {Colors.RED}[!!!] ALERT: IP {Colors.BOLD}{ip} {loc}{Colors.RESET}{Colors.RED} made {count} POST requests to sensitive endpoints.{Colors.RESET}")
+            print(f"  {Colors.YELLOW}[!] FUZZING: IP {Colors.BOLD}{ip} {loc}{Colors.RESET}{Colors.YELLOW} hit {count} hidden/sensitive paths (40x errors).{Colors.RESET}")
     else:
-        print(f"  {Colors.GREEN}[+] No targeted brute-forcing detected.{Colors.RESET}")
-
-    print(f"\n{Colors.BLUE}[*] ADVANCED ANALYTICS: UNUSUAL HTTP METHODS (Reconnaissance):{Colors.RESET}")
-    if ip_suspicious_methods:
-        for ip, methods in ip_suspicious_methods.items():
+        print(f"  {Colors.GREEN}[+] No targeted directory fuzzing detected.{Colors.RESET}")
+        
+    print(f"\n{Colors.BLUE}[*] ADVANCED ANALYTICS: AUTOMATED LAZY BOT TOOLING:{Colors.RESET}")
+    if high_lazy_bots:
+        for ip, count in high_lazy_bots.items():
             loc = get_geo(ip)
-            print(f"  {Colors.YELLOW}[!] RECON: IP {Colors.BOLD}{ip} {loc}{Colors.RESET}{Colors.YELLOW} used suspicious methods: {', '.join(methods)}.{Colors.RESET}")
+            print(f"  {Colors.ORANGE}[!] BOT: IP {Colors.BOLD}{ip} {loc}{Colors.RESET}{Colors.ORANGE} used Null/Automated User-Agents {count} times.{Colors.RESET}")
     else:
-        print(f"  {Colors.GREEN}[+] No unusual HTTP methods generated.{Colors.RESET}")
+         print(f"  {Colors.GREEN}[+] No lazy scripts bypassing heuristics detected.{Colors.RESET}")
 
     print(f"\n{Colors.BLUE}[*] BEHAVIORAL: DENIAL OF SERVICE (DoS) & SCRAPING (Rate-Based):{Colors.RESET}")
     if dos_ips:
         for ip, rpm in dos_ips.items():
-            loc = get_geo(ip)
-            print(f"  {Colors.RED}[!!!] DoS ALERT: IP Address {Colors.BOLD}{ip} {loc}{Colors.RESET}{Colors.RED} hit a severe peak of {rpm} requests/min.{Colors.RESET}")
-    
-    if scraping_ips:
-        for ip, rpm in scraping_ips.items():
-            loc = get_geo(ip)
-            print(f"  {Colors.ORANGE}[!] SCRAPING: IP Address {Colors.BOLD}{ip} {loc}{Colors.RESET}{Colors.ORANGE} hit a high volume of {rpm} requests/min.{Colors.RESET}")
-    
+            print(f"  {Colors.RED}[!!!] DoS ALERT: IP Address {Colors.BOLD}{ip}{Colors.RESET}{Colors.RED} hit a severe peak of {rpm} requests/min.{Colors.RESET}")
     if not dos_ips and not scraping_ips:
         print(f"  {Colors.GREEN}[+] Traffic rates are optimal. No Scraping or DoS behavior detected.{Colors.RESET}")
 
-    print(f"\n{Colors.BLUE}[*] BEHAVIORAL: HIGH 40x ERROR RATES (Potential Scanning / Brute Force):{Colors.RESET}")
-    if high_failures:
-        for ip, count in high_failures.items():
-            loc = get_geo(ip)
-            print(f"  {Colors.YELLOW}[!] IP Address {Colors.BOLD}{ip} {loc}{Colors.RESET}{Colors.YELLOW} encountered {count} failed requests (40x HTTP Codes).{Colors.RESET}")
-    else:
-        print(f"  {Colors.GREEN}[+] No IPs with unusually high 40x failure rates.{Colors.RESET}")
-    
-    if fake_bots:
-        print(f"\n{Colors.BLUE}[*] BEHAVIORAL: FAKE SEARCH ENGINE BOTS (Spoofed User-Agents):{Colors.RESET}")
-        for ip, ua in fake_bots.items():
-            loc = get_geo(ip)
-            print(f"  {Colors.RED}[!!!] FAKE BOT: {Colors.BOLD}{ip} {loc}{Colors.RESET}{Colors.RED} claimed to be a Search Engine but committed attacks.{Colors.RESET}")
-
     print(f"\n{Colors.CYAN}{'=' * 70}{Colors.RESET}")
 
-    # -------------------
-    # EXPORTING LOGIC
-    # -------------------
     report_data = {
         "file_analyzed": file_path,
         "suspicious_events": suspicious_events,
         "dos_ips": dos_ips,
         "scraping_ips": scraping_ips,
         "high_failure_ips": high_failures,
-        "fake_bots": fake_bots,
         "high_5xx": high_5xx,
         "high_sensitive": high_sensitive,
-        "suspicious_methods": ip_suspicious_methods
+        "suspicious_methods": ip_suspicious_methods,
+        "high_fuzzing": high_fuzzing,
+        "data_exfil_events": data_exfil_events,
+        "high_lazy_bots": high_lazy_bots
     }
 
-    if json_export:
-        export_json(report_data, json_export)
-    if html_export:
-        export_html(report_data, html_export)
-
+    if json_export: export_json(report_data, json_export)
+    if html_export: export_html(report_data, html_export)
+    if md_export: export_md(report_data, md_export)
+    if csv_export: export_csv(report_data, csv_export)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Gargantua - Supermassive Web Threat Analysis Engine")
     parser.add_argument("-f", "--file", required=True, help="Path to the access.log file to analyze")
-    parser.add_argument("-j", "--json", help="Path to output the report as a JSON file (e.g., report.json)")
-    parser.add_argument("-H", "--html", help="Path to output the report as an HTML dashboard (e.g., report.html)")
+    parser.add_argument("-j", "--json", help="Export to JSON (e.g., report.json)")
+    parser.add_argument("-H", "--html", help="Export to HTML (e.g., report.html)")
+    parser.add_argument("-md", "--markdown", help="Export to Markdown (e.g., report.md)")
+    parser.add_argument("-c", "--csv", help="Export to CSV (e.g., report.csv)")
     
     args = parser.parse_args()
-    analyze_logs(args.file, json_export=args.json, html_export=args.html)
+    analyze_logs(args.file, json_export=args.json, html_export=args.html, md_export=args.markdown, csv_export=args.csv)
