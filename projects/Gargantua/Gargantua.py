@@ -84,7 +84,7 @@ def export_html(report_data, filepath):
     </head>
     <body>
         <div class="container">
-            <h1>Gargantua: Log Analysis Result</h1>
+            <h1>Gargantua: Logs Report</h1>
             <p><strong>Created by:</strong> Saeed Elfiky</p>
             <p><strong>Generated on:</strong> {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
             <p><strong>Analyzed File:</strong> {report_data['file_analyzed']}</p>
@@ -95,13 +95,13 @@ def export_html(report_data, filepath):
     if report_data["suspicious_events"]:
         html_content += """
         <table>
-            <tr><th>Line</th><th>Source IP</th><th>Threat Type</th><th>Request Payload Snippet</th></tr>
+            <tr><th>First Line</th><th>Source IP</th><th>Threat Type</th><th>Occurrences</th><th>Request Payload Snippet</th></tr>
         """
         for event in report_data["suspicious_events"]:
             # Prevent stored XSS by securely escaping malicious log payloads before writing to HTML dashboard
             safe_payload = html.escape(event['payload'])
             snippet = safe_payload[:100] + '...' if len(safe_payload) > 100 else safe_payload
-            html_content += f"<tr class='warning'><td>{event['line_no']}</td><td><strong>{event['ip']}</strong></td><td><span class='threat-badge'>{event['type']}</span></td><td><span class='code-snippet'>{snippet}</span></td></tr>"
+            html_content += f"<tr class='warning'><td>{event['first_line']}</td><td><strong>{event['ip']}</strong></td><td><span class='threat-badge'>{event['type']}</span></td><td><strong>{event['count']}</strong></td><td><span class='code-snippet'>{snippet}</span></td></tr>"
         html_content += "</table>"
     else:
         html_content += "<p class='info'>No signature-based web attacks detected in this log.</p>"
@@ -143,7 +143,7 @@ def analyze_logs(file_path, json_export=None, html_export=None):
     print(f"{Colors.ORANGE}{LOGO}{Colors.RESET}")
     print(f"{Colors.BLUE}[*] Starting Log Analysis on: {Colors.BOLD}{file_path}{Colors.RESET}\n")
     
-    suspicious_events = []
+    suspicious_events_dict = {}
     ip_requests = defaultdict(int)
     ip_failed_codes = defaultdict(int)
     
@@ -165,22 +165,29 @@ def analyze_logs(file_path, json_export=None, html_export=None):
                     ip_failed_codes[ip] += 1
                 
                 for attack_type, pattern in PATTERNS.items():
+                    matched = False
+                    payload = ""
                     if attack_type == "Malicious User-Agent (Scanners)":
                         if user_agent and pattern.search(user_agent):
-                            suspicious_events.append({
-                                'line_no': line_no,
-                                'ip': ip,
-                                'type': attack_type,
-                                'payload': user_agent
-                            })
+                            matched = True
+                            payload = user_agent
                     else:
                         if pattern.search(request_decoded):
-                            suspicious_events.append({
-                                'line_no': line_no,
+                            matched = True
+                            payload = request_decoded
+
+                    if matched:
+                        event_key = (ip, attack_type)
+                        if event_key not in suspicious_events_dict:
+                            suspicious_events_dict[event_key] = {
+                                'first_line': line_no,
+                                'count': 1,
                                 'ip': ip,
                                 'type': attack_type,
-                                'payload': request_decoded
-                            })
+                                'payload': payload
+                            }
+                        else:
+                            suspicious_events_dict[event_key]['count'] += 1
 
     except FileNotFoundError:
         print(f"{Colors.RED}[!] Error: File '{file_path}' not found.{Colors.RESET}")
@@ -188,6 +195,8 @@ def analyze_logs(file_path, json_export=None, html_export=None):
     except Exception as e:
         print(f"{Colors.RED}[!] Error parsing logs: {e}{Colors.RESET}")
         return
+
+    suspicious_events = list(suspicious_events_dict.values())
 
     # Filter behavioral anomalies
     high_traffic = {ip: count for ip, count in ip_requests.items() if count >= 15}
@@ -202,9 +211,9 @@ def analyze_logs(file_path, json_export=None, html_export=None):
     print(f"{'=' * 70}{Colors.RESET}")
     
     if suspicious_events:
-        print(f"\n{Colors.RED}[!] ALERT: Found {len(suspicious_events)} Suspicious Events based on signatures:{Colors.RESET}")
+        print(f"\n{Colors.RED}[!] ALERT: Found {len(suspicious_events)} Unique Suspicious Events (Aggregated):{Colors.RESET}")
         for event in suspicious_events:
-            print(f"  {Colors.YELLOW}Line {event['line_no']:<4}{Colors.RESET} | {Colors.CYAN}Source IP: {event['ip']:<15}{Colors.RESET} | {Colors.RED}Threat: {event['type']}{Colors.RESET}")
+            print(f"  {Colors.YELLOW}First Line: {event['first_line']:<4}{Colors.RESET} | {Colors.CYAN}Source IP: {event['ip']:<15}{Colors.RESET} | {Colors.RED}Threat: {event['type']}{Colors.RESET} | {Colors.ORANGE}Occurrences: {event['count']}{Colors.RESET}")
             trimmed_payload = (event['payload'][:80] + '...') if len(event['payload']) > 80 else event['payload']
             print(f"  {Colors.BOLD}Payload :{Colors.RESET} {trimmed_payload}")
             print(f"{Colors.CYAN}{'-' * 70}{Colors.RESET}")
