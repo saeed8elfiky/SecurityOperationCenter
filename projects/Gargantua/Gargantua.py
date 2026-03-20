@@ -107,14 +107,26 @@ def export_html(report_data, filepath):
         html_content += "<p class='info'>No signature-based web attacks detected in this log.</p>"
 
     # Section 2: High Traffic
-    html_content += "<h2>High Traffic IPs (Potential DoS / Scraping)</h2>"
-    if report_data["high_traffic_ips"]:
-        html_content += "<table><tr><th>Source IP</th><th>Request Count</th></tr>"
-        for ip, count in report_data["high_traffic_ips"].items():
-            html_content += f"<tr class='warning'><td><strong>{ip}</strong></td><td>{count}</td></tr>"
+    html_content += "<h2>Behavioral Anomalies (DoS / Scraping)</h2>"
+    
+    # DoS Attack Level
+    if report_data.get("dos_ips"):
+        html_content += "<h3>Severe Traffic (Potential DoS Attacks 🚨)</h3>"
+        html_content += "<table><tr><th>Source IP</th><th>Peak Requests/Minute</th><th>Status</th></tr>"
+        for ip, count in report_data["dos_ips"].items():
+            html_content += f"<tr class='warning'><td><strong>{ip}</strong></td><td>{count}</td><td><span class='threat-badge' style='background-color:#c0392b;'>DoS/DDoS</span></td></tr>"
         html_content += "</table>"
-    else:
-        html_content += "<p class='info'>Request volume frequency is normal across all IPs.</p>"
+        
+    # Scraping Level
+    if report_data.get("scraping_ips"):
+        html_content += "<h3>High Traffic (Potential Scraping / Bots)</h3>"
+        html_content += "<table><tr><th>Source IP</th><th>Peak Requests/Minute</th><th>Status</th></tr>"
+        for ip, count in report_data["scraping_ips"].items():
+            html_content += f"<tr class='warning'><td><strong>{ip}</strong></td><td>{count}</td><td><span class='threat-badge' style='background-color:#e67e22;'>Scraping</span></td></tr>"
+        html_content += "</table>"
+
+    if not report_data.get("dos_ips") and not report_data.get("scraping_ips"):
+        html_content += "<p class='info'>Request volumes are within normal thresholds (No DoS/Scraping detected).</p>"
 
     # Section 3: High Failures
     html_content += "<h2>High 40x Error Rates (Potential Brute-Force / Scanning)</h2>"
@@ -146,6 +158,7 @@ def analyze_logs(file_path, json_export=None, html_export=None):
     suspicious_events_dict = {}
     ip_requests = defaultdict(int)
     ip_failed_codes = defaultdict(int)
+    ip_time_requests = defaultdict(lambda: defaultdict(int)) # Maps IP -> Minute -> Count
     
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -158,8 +171,17 @@ def analyze_logs(file_path, json_export=None, html_export=None):
                 user_agent = data.get('user_agent', '')
                 ip = data['ip']
                 status = data['status']
+                timestamp = data.get('time', '')
+                
+                # Extract minute identifier (e.g., '12/Dec/2015:18:25:11 +0100' -> '12/Dec/2015:18:25')
+                time_parts = timestamp.split(':')
+                if len(time_parts) >= 3:
+                    minute_str = f"{time_parts[0]}:{time_parts[1]}:{time_parts[2]}"
+                else:
+                    minute_str = "unknown"
                 
                 ip_requests[ip] += 1
+                ip_time_requests[ip][minute_str] += 1
                 
                 if status in ['401', '403', '404']:
                     ip_failed_codes[ip] += 1
@@ -198,9 +220,16 @@ def analyze_logs(file_path, json_export=None, html_export=None):
 
     suspicious_events = list(suspicious_events_dict.values())
 
-    # Filter behavioral anomalies
-    high_traffic = {ip: count for ip, count in ip_requests.items() if count >= 15}
-    high_failures = {ip: count for ip, count in ip_failed_codes.items() if count >= 5}
+    # Rate-based behavioral anomalies (Requests Per Minute)
+    ip_max_rpm = {}
+    for ip, minutes in ip_time_requests.items():
+        ip_max_rpm[ip] = max(minutes.values()) if minutes else 0
+
+    scraping_ips = {ip: rpm for ip, rpm in ip_max_rpm.items() if 60 <= rpm < 150}
+    dos_ips = {ip: rpm for ip, rpm in ip_max_rpm.items() if rpm >= 150}
+    
+    # Bumping failure threshold to filter out normal mistyped URLs
+    high_failures = {ip: count for ip, count in ip_failed_codes.items() if count >= 20}
 
     # -------------------
     # CLI REPORT
@@ -220,12 +249,17 @@ def analyze_logs(file_path, json_export=None, html_export=None):
     else:
         print(f"\n{Colors.GREEN}[+] No signature-based web attacks detected.{Colors.RESET}")
 
-    print(f"\n{Colors.BLUE}[*] BEHAVIORAL: HIGH TRAFFIC IPs (Potential DoS / Brute Force):{Colors.RESET}")
-    if high_traffic:
-        for ip, count in high_traffic.items():
-            print(f"  {Colors.YELLOW}[!] IP Address {Colors.BOLD}{ip}{Colors.RESET}{Colors.YELLOW} made an irregular amount of requests ({count}).{Colors.RESET}")
-    else:
-        print(f"  {Colors.GREEN}[+] Traffic frequency is normal.{Colors.RESET}")
+    print(f"\n{Colors.BLUE}[*] BEHAVIORAL: DENIAL OF SERVICE (DoS) & SCRAPING (Rate-Based):{Colors.RESET}")
+    if dos_ips:
+        for ip, rpm in dos_ips.items():
+            print(f"  {Colors.RED}[!!!] DoS ALERT: IP Address {Colors.BOLD}{ip}{Colors.RESET}{Colors.RED} hit a severe peak of {rpm} requests/minute.{Colors.RESET}")
+    
+    if scraping_ips:
+        for ip, rpm in scraping_ips.items():
+            print(f"  {Colors.ORANGE}[!] SCRAPING: IP Address {Colors.BOLD}{ip}{Colors.RESET}{Colors.ORANGE} hit a high volume of {rpm} requests/minute.{Colors.RESET}")
+    
+    if not dos_ips and not scraping_ips:
+        print(f"  {Colors.GREEN}[+] Traffic rates are optimal. No Scraping or DoS behavior detected.{Colors.RESET}")
 
     print(f"\n{Colors.BLUE}[*] BEHAVIORAL: HIGH 40x ERROR RATES (Potential Scanning / Brute Force):{Colors.RESET}")
     if high_failures:
@@ -242,7 +276,8 @@ def analyze_logs(file_path, json_export=None, html_export=None):
     report_data = {
         "file_analyzed": file_path,
         "suspicious_events": suspicious_events,
-        "high_traffic_ips": high_traffic,
+        "dos_ips": dos_ips,
+        "scraping_ips": scraping_ips,
         "high_failure_ips": high_failures
     }
 
