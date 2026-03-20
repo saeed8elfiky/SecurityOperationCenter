@@ -23,9 +23,13 @@ A Python-based cybersecurity tool designed to parse standard web server access l
   * Cross-Site Scripting / XSS (`<script>`, `onload=`)
   * Path Traversal (`../../etc/passwd`)
 * **Scanner Recognition:** Identifies known automated vulnerability scanners via the `User-Agent` HTTP header (e.g., Nikto, Nmap, SQLmap, Masscan).
-* **Behavioral Heuristics:**
-  * **Brute Force & Credential Stuffing:** Flags IP addresses that trigger an excessive number of `401 Unauthorized` or `403 Forbidden` Server HTTP responses.
+* **Behavioral Heuristics & Advanced Analytics:**
+  * **Brute Force & Credential Stuffing:** Flags IP addresses that trigger an excessive number of `401 Unauthorized` or `403 Forbidden` Server HTTP responses, as well as high-frequency `POST` requests targeted directly at sensitive endpoints.
+  * **Internal Error Exploits:** Specifically monitors anomalous spikes in `50x Internal Server Errors`, indicating application crashing or successful remote execution attempts.
+  * **Reconnaissance Tracking:** Detects abnormal requests utilizing unorthodox HTTP methods (`PUT`, `DELETE`, `TRACE`, `OPTIONS`, `CONNECT`).
   * **Denial of Service (DoS) & Scraping:** Identifies highly irregular volume spikes in traffic frequency originating from a single IP address.
+* **Geolocation Lookups:** Instantly maps malicious IPv4/IPv6 addresses to their physical countries and cities on-the-fly dynamically.
+* **Universal Parsing:** Seamlessly handles both standard Apache/Nginx Combined log formatting, as well as native JSON format (for modern services like Cloudflare, AWS ALB, or Traefik Logs).
 * **Syntax Highlighting:** Highly readable CLI terminal output utilizing native ANSI color codes to quickly distinguish real alerts from benign traffic visually.
 * **XSS-Safe HTML Dashboard Export:** The analyzer can dynamically generate and export a styled `report.html` or a structured `report.json` array. Threat payloads are rigorously sanitised with Python's `html.escape()` wrapper before rendering, preventing highly ironic Stored-XSS injection loops within the tool itself.
 
