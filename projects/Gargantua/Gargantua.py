@@ -26,12 +26,13 @@ class Colors:
 PATTERNS = {
     "SQL Injection": re.compile(r"(%27)|(\')|(--)|(%23)|(#)|(UNION.*SELECT)|(OR.*1=1)", re.IGNORECASE),
     "Cross-Site Scripting (XSS)": re.compile(r"(%3C)|(<)\s*(script|iframe|img|svg|body|onload|onerror)", re.IGNORECASE),
-    "Path Traversal": re.compile(r"(\.\./)|(\.\.%2f)|(%2e%2e%2f)|(%2e%2e/)", re.IGNORECASE),
-    "Malicious User-Agent (Scanners)": re.compile(r"(nikto|nmap|sqlmap|dirbuster|zmcat|masscan)", re.IGNORECASE),
+    "Path Traversal (LFI)": re.compile(r"(\.\./)|(\.\.%2f)|(%2e%2e%2f)|(%2e%2e/)|(/etc/passwd|/etc/shadow|win\.ini|boot\.ini)", re.IGNORECASE),
+    "Sensitive Files Exposure": re.compile(r"(\.env|wp-config\.php|\.git/config|id_rsa)", re.IGNORECASE),
+    "Malicious User-Agent (Scanners)": re.compile(r"(nikto|nmap|sqlmap|dirbuster|zmcat|masscan|gobuster|ffuf|fuzz faster u fool|wfuzz|feroxbuster|nuclei|wpscan|burpsuite|acunetix|netsparker|zmap|httpx)", re.IGNORECASE),
     "Log4j (JNDI Injection)": re.compile(r"(\$\{jndi:(ldap|rmi|dns|nis|http|corba|iiop):.*?\})", re.IGNORECASE),
     "Shellshock (CVE-2014-6271)": re.compile(r"(\(\)\s*\{\s*:\s*;\s*\}\s*;)", re.IGNORECASE),
     "Server-Side Request Forgery (SSRF)": re.compile(r"((?:\?|&)url=(?:http|https|ftp|file|dict|gopher|ldap)://)", re.IGNORECASE),
-    "Command Injection": re.compile(r"(;|\|\||&&)\s*(cat|ls|id|whoami|wget|curl|nc\s+-e|bash\s+-i)", re.IGNORECASE)
+    "Command Injection": re.compile(r"(;|\|\||&&)\s*(cat|ls|id|whoami|wget|curl|nc\s+-e|bash\s+-i|cmd\.exe|powershell)", re.IGNORECASE)
 }
 
 LOGO = r"""
@@ -276,6 +277,9 @@ def analyze_logs(file_path, json_export=None, html_export=None):
                         if pattern.search(request_decoded):
                             matched = True
                             payload = request_decoded
+                        elif user_agent and pattern.search(user_agent):
+                            matched = True
+                            payload = user_agent
 
                     if matched:
                         event_key = (ip, attack_type)
