@@ -27,7 +27,11 @@ PATTERNS = {
     "SQL Injection": re.compile(r"(%27)|(\')|(--)|(%23)|(#)|(UNION.*SELECT)|(OR.*1=1)", re.IGNORECASE),
     "Cross-Site Scripting (XSS)": re.compile(r"(%3C)|(<)\s*(script|iframe|img|svg|body|onload|onerror)", re.IGNORECASE),
     "Path Traversal": re.compile(r"(\.\./)|(\.\.%2f)|(%2e%2e%2f)|(%2e%2e/)", re.IGNORECASE),
-    "Malicious User-Agent (Scanners)": re.compile(r"(nikto|nmap|sqlmap|dirbuster|zmcat|masscan)", re.IGNORECASE)
+    "Malicious User-Agent (Scanners)": re.compile(r"(nikto|nmap|sqlmap|dirbuster|zmcat|masscan)", re.IGNORECASE),
+    "Log4j (JNDI Injection)": re.compile(r"(\$\{jndi:(ldap|rmi|dns|nis|http|corba|iiop):.*?\})", re.IGNORECASE),
+    "Shellshock (CVE-2014-6271)": re.compile(r"(\(\)\s*\{\s*:\s*;\s*\}\s*;)", re.IGNORECASE),
+    "Server-Side Request Forgery (SSRF)": re.compile(r"((?:\?|&)url=(?:http|https|ftp|file|dict|gopher|ldap)://)", re.IGNORECASE),
+    "Command Injection": re.compile(r"(;|\|\||&&)\s*(cat|ls|id|whoami|wget|curl|nc\s+-e|bash\s+-i)", re.IGNORECASE)
 }
 
 LOGO = r"""
@@ -81,6 +85,7 @@ def export_html(report_data, filepath):
             .code-snippet {{ background: #f8f9fa; border: 1px solid #ccc; padding: 4px; border-radius: 4px; font-family: monospace; word-break: break-all; }}
             .threat-badge {{ background: #d9534f; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }}
         </style>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </head>
     <body>
         <div class="container">
@@ -106,12 +111,26 @@ def export_html(report_data, filepath):
     else:
         html_content += "<p class='info'>No signature-based web attacks detected in this log.</p>"
 
+    # Dashboard Charts
+    html_content += """
+        <div class="charts-row" style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 30px;">
+            <div style="flex: 1; min-width: 300px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <h3 style="text-align: center;">Aggregated Threats Distribution</h3>
+                <canvas id="threatChart"></canvas>
+            </div>
+            <div style="flex: 1; min-width: 300px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <h3 style="text-align: center;">Top Traffic APIs (RPM)</h3>
+                <canvas id="trafficChart"></canvas>
+            </div>
+        </div>
+    """
+
     # Section 2: High Traffic
     html_content += "<h2>Behavioral Anomalies (DoS / Scraping)</h2>"
     
     # DoS Attack Level
     if report_data.get("dos_ips"):
-        html_content += "<h3>Severe Traffic (Potential DoS Attacks 🚨)</h3>"
+        html_content += "<h3>Severe Traffic (Potential DoS Attacks)</h3>"
         html_content += "<table><tr><th>Source IP</th><th>Peak Requests/Minute</th><th>Status</th></tr>"
         for ip, count in report_data["dos_ips"].items():
             html_content += f"<tr class='warning'><td><strong>{ip}</strong></td><td>{count}</td><td><span class='threat-badge' style='background-color:#c0392b;'>DoS/DDoS</span></td></tr>"
@@ -128,6 +147,14 @@ def export_html(report_data, filepath):
     if not report_data.get("dos_ips") and not report_data.get("scraping_ips"):
         html_content += "<p class='info'>Request volumes are within normal thresholds (No DoS/Scraping detected).</p>"
 
+    # Section 4: Fake Bots
+    if report_data.get("fake_bots"):
+        html_content += "<h2>Fake Search Engine Bots (Spoofed User Agents)</h2>"
+        html_content += "<table><tr><th>Source IP</th><th>Spoofed User-Agent</th></tr>"
+        for ip, ua in report_data["fake_bots"].items():
+            html_content += f"<tr class='warning'><td><strong>{ip}</strong></td><td><span class='code-snippet'>{html.escape(ua)}</span></td></tr>"
+        html_content += "</table>"
+
     # Section 3: High Failures
     html_content += "<h2>High 40x Error Rates (Potential Brute-Force / Scanning)</h2>"
     if report_data["high_failure_ips"]:
@@ -138,8 +165,56 @@ def export_html(report_data, filepath):
     else:
         html_content += "<p class='info'>No unusually high authentication or access failure rates detected.</p>"
 
-    html_content += """
+    # Prepare Threat Type Distribution for Chart.js
+    threat_counts = defaultdict(int)
+    if "suspicious_events" in report_data:
+        for event in report_data["suspicious_events"]:
+            threat_counts[event['type']] += event['count']
+    threat_labels = list(threat_counts.keys())
+    threat_data = list(threat_counts.values())
+
+    # Prepare Top DoS / Scraping IPs for Chart.js
+    all_traffic = {}
+    if report_data.get("dos_ips"):
+        all_traffic.update(report_data["dos_ips"])
+    if report_data.get("scraping_ips"):
+        all_traffic.update(report_data["scraping_ips"])
+    top_traffic = dict(sorted(all_traffic.items(), key=lambda item: item[1], reverse=True)[:10])
+    traffic_labels = list(top_traffic.keys())
+    traffic_data = list(top_traffic.values())
+
+    html_content += f"""
         </div>
+        <script>
+            const ctxThreat = document.getElementById('threatChart').getContext('2d');
+            new Chart(ctxThreat, {{
+                type: 'doughnut',
+                data: {{
+                    labels: {json.dumps(threat_labels)},
+                    datasets: [{{
+                        data: {json.dumps(threat_data)},
+                        backgroundColor: ['#e74c3c', '#e67e22', '#f1c40f', '#3498db', '#9b59b6', '#34495e', '#1abc9c'],
+                        borderWidth: 1
+                    }}]
+                }},
+                options: {{ responsive: true }}
+            }});
+
+            const ctxTraffic = document.getElementById('trafficChart').getContext('2d');
+            new Chart(ctxTraffic, {{
+                type: 'bar',
+                data: {{
+                    labels: {json.dumps(traffic_labels)},
+                    datasets: [{{
+                        label: 'Peak Requests / Minute',
+                        data: {json.dumps(traffic_data)},
+                        backgroundColor: '#c0392b',
+                        borderWidth: 1
+                    }}]
+                }},
+                options: {{ responsive: true, scales: {{ y: {{ beginAtZero: true }} }} }}
+            }});
+        </script>
     </body>
     </html>
     """
@@ -156,6 +231,7 @@ def analyze_logs(file_path, json_export=None, html_export=None):
     print(f"{Colors.BLUE}[*] Starting Log Analysis on: {Colors.BOLD}{file_path}{Colors.RESET}\n")
     
     suspicious_events_dict = {}
+    claimed_bots = {}
     ip_requests = defaultdict(int)
     ip_failed_codes = defaultdict(int)
     ip_time_requests = defaultdict(lambda: defaultdict(int)) # Maps IP -> Minute -> Count
@@ -185,6 +261,9 @@ def analyze_logs(file_path, json_export=None, html_export=None):
                 
                 if status in ['401', '403', '404']:
                     ip_failed_codes[ip] += 1
+                
+                if user_agent and re.search(r'(Googlebot|Bingbot|Baiduspider|YandexBot|Slurp|DuckDuckBot)', user_agent, re.IGNORECASE):
+                    claimed_bots[ip] = user_agent
                 
                 for attack_type, pattern in PATTERNS.items():
                     matched = False
@@ -231,6 +310,13 @@ def analyze_logs(file_path, json_export=None, html_export=None):
     # Bumping failure threshold to filter out normal mistyped URLs
     high_failures = {ip: count for ip, count in ip_failed_codes.items() if count >= 20}
 
+    # Detect Fake Bots
+    fake_bots = {}
+    suspicious_ips = {evt['ip'] for evt in suspicious_events}
+    for ip, ua in claimed_bots.items():
+        if ip in dos_ips or ip in scraping_ips or ip in suspicious_ips:
+            fake_bots[ip] = ua
+
     # -------------------
     # CLI REPORT
     # -------------------
@@ -267,7 +353,12 @@ def analyze_logs(file_path, json_export=None, html_export=None):
             print(f"  {Colors.YELLOW}[!] IP Address {Colors.BOLD}{ip}{Colors.RESET}{Colors.YELLOW} encountered {count} failed requests (401/403/404 HTTP Codes).{Colors.RESET}")
     else:
         print(f"  {Colors.GREEN}[+] No IPs with unusually high failure rates.{Colors.RESET}")
-        
+    
+    if fake_bots:
+        print(f"\n{Colors.BLUE}[*] BEHAVIORAL: FAKE SEARCH ENGINE BOTS (Spoofed User-Agents):{Colors.RESET}")
+        for ip, ua in fake_bots.items():
+            print(f"  {Colors.RED}[!!!] FAKE BOT: {Colors.BOLD}{ip}{Colors.RESET}{Colors.RED} claimed to be a Search Engine but committed attacks.{Colors.RESET}")
+
     print(f"\n{Colors.CYAN}{'=' * 70}{Colors.RESET}")
 
     # -------------------
@@ -278,7 +369,8 @@ def analyze_logs(file_path, json_export=None, html_export=None):
         "suspicious_events": suspicious_events,
         "dos_ips": dos_ips,
         "scraping_ips": scraping_ips,
-        "high_failure_ips": high_failures
+        "high_failure_ips": high_failures,
+        "fake_bots": fake_bots
     }
 
     if json_export:
